@@ -1,20 +1,29 @@
-import { Component, createEffect, onMount } from "solid-js";
-import Vec2D from "../../lib/vector";
-import { useView } from "../Viewport";
-import { draw } from "../../lib/draw";
-import { useOverlay } from "../Overlay";
+import { Component, createEffect, onMount } from 'solid-js';
+import Vec2D from '../../lib/vector';
+import { useView } from '../Viewport';
+import { draw } from '../../lib/draw';
+import { useOverlay } from '../Overlay';
 
-let canvas: HTMLCanvasElement
+let canvas: HTMLCanvasElement;
 
 const App: Component = () => {
-  const [view, { setPosition, setLastMousePosition, setDimensions, scaleViewUpTo, scaleViewDownTo }] = useView();
-  const [_, { toggleEditOverlay }] = useOverlay();
+  const [
+    view,
+    {
+      setPosition,
+      setLastMousePosition,
+      setDimensions,
+      scaleViewUpTo,
+      scaleViewDownTo,
+    },
+  ] = useView();
+  const [, { toggleEditOverlay }] = useOverlay();
 
   function handleMousemove(e: MouseEvent) {
     if (e.buttons == 1) {
-      setPosition(new Vec2D(-e.clientX, e.clientY))
+      setPosition(new Vec2D(-e.clientX, e.clientY));
     }
-    setLastMousePosition(new Vec2D(-e.clientX, e.clientY))
+    setLastMousePosition(new Vec2D(-e.clientX, e.clientY));
   }
 
   function handleScroll(e: WheelEvent) {
@@ -22,9 +31,9 @@ const App: Component = () => {
       return;
     }
     if (e.deltaY < 0 && view.scale.level < 160) {
-      scaleViewUpTo(new Vec2D(e.offsetX, -e.offsetY))
+      scaleViewUpTo(new Vec2D(e.offsetX, -e.offsetY));
     } else if (e.deltaY > 0 && view.scale.level > 0.01) {
-      scaleViewDownTo(new Vec2D(e.offsetX, -e.offsetY))
+      scaleViewDownTo(new Vec2D(e.offsetX, -e.offsetY));
     }
   }
 
@@ -34,32 +43,32 @@ const App: Component = () => {
       if (canvas.width !== width || canvas.height !== height) {
         canvas.width = width;
         canvas.height = height;
-        setDimensions(height, width)
+        setDimensions(height, width);
       }
     };
-    handleResize()
+    handleResize();
     window.addEventListener('resize', () => {
       handleResize();
-    })
+    });
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        toggleEditOverlay()
+        toggleEditOverlay();
       }
-    })
-  })
+    });
+  });
 
   createEffect(() => {
-    draw(canvas, view)
-  })
+    draw(canvas, view);
+  });
 
   return (
     <main class="absolute">
       <canvas
         class="w-screen h-screen"
-        onmousemove={handleMousemove}
-        onwheel={handleScroll}
+        onMouseMove={handleMousemove}
+        onWheel={handleScroll}
         ref={canvas}
-        />
+      />
     </main>
   );
 };
