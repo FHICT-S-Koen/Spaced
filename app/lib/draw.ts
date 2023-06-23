@@ -1,4 +1,3 @@
-import { ViewportState } from '../components/Viewport';
 import { globalToView } from './utils';
 import Vec2D from './vector';
 
@@ -8,7 +7,7 @@ export const draw = (canvas: HTMLCanvasElement, view: ViewportState) => {
   const viewPos = globalToView(new Vec2D(-100, 0), view.position, level);
 
   clearCanvas(canvas);
-  drawGrid(canvas, view);
+  // drawGrid(canvas, view);
   if (ctx) ctx.fillStyle = 'black';
   ctx?.fillRect(viewPos.x, -viewPos.y, 50 * level, 50 * level);
 };
