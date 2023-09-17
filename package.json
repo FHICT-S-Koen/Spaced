@@ -17,7 +17,7 @@
     "prettier:fix": "npm run prettier -- --write",
     "serve": "vite preview",
     "start": "vite",
-    "tauri": "tauri",
+    "tauri": "DATABASE_URL='sqlite:../test.db' tauri",
     "bin": "tauri/target/release/spaced"
   },
   "lint-staged": {
@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.0.0",
+    "@tauri-apps/api": "^1.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "autoprefixer": "^10.0.0",

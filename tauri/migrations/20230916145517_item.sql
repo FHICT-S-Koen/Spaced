@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS item
+(
+  id INTEGER PRIMARY KEY NOT NULL,
+  x INTEGER,
+  y INTEGER,
+  text varchar(30)
+);

@@ -1,9 +1,12 @@
-import { createSignal, For } from 'solid-js';
+import { invoke } from '@tauri-apps/api/tauri';
+import type { Setter } from 'solid-js';
+import { createResource, createSignal, For } from 'solid-js';
 
 import { Background } from './Background.js';
 import { Container } from './Container.js';
 import {
   absoluteToRelative,
+  relativeToAbsolute,
   scaleViewportOutFrom,
   scaleViewportUpTo,
   Vec2D,
@@ -52,7 +55,30 @@ function handleWheel(event: WheelEvent) {
   }
 }
 
+export type Item = {
+  id?: number;
+  x: number;
+  y: number;
+  text: string;
+};
+
+function handleClick(event: MouseEvent, mutate: Setter<Item[] | undefined>) {
+  const absolute = relativeToAbsolute(
+    new Vec2D(window.innerWidth / 2 - 24, -(window.innerHeight / 2 - 24)),
+    absoluteViewportPosition(),
+    scalar(),
+  );
+
+  invoke('insert_into', {
+    x: Math.floor(absolute.x),
+    y: Math.floor(absolute.y),
+    text: 'test',
+  }).then((note) => mutate((prev) => [...(prev ?? []), note] as Item[]));
+}
+
 export function App() {
+  const [data, { mutate }] = createResource<Item[]>(() => invoke('select'));
+
   return (
     <div
       class="h-full w-full overflow-hidden"
@@ -62,15 +88,16 @@ export function App() {
       {/* TODO: resolve FOUC */}
       <Background />
       <main class="absolute h-full w-full">
-        <For
-          each={[
-            { text: 'foo', x: 0, y: 0 },
-            { text: 'bar', x: 50, y: 0 },
-            { text: 'baz', x: -70, y: 25 },
-          ]}
+        <button
+          onClick={(event) => handleClick(event, mutate)}
+          class="absolute bottom-1 left-1 z-50 rounded border-2 border-slate-600 bg-slate-500 text-white shadow"
         >
+          Create 🚀
+        </button>
+        <For each={data.latest}>
           {(item) => (
             <Container
+              id={item.id!}
               text={item.text}
               translation={absoluteToRelative(
                 new Vec2D(item.x, item.y),
@@ -78,6 +105,7 @@ export function App() {
                 scalar(),
               )}
               scale={scalar()}
+              mutate={mutate}
             />
           )}
         </For>
