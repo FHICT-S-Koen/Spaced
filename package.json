@@ -16,15 +16,14 @@
     "prettier": "npx prettier app --check",
     "prettier:fix": "npm run prettier -- --write",
     "serve": "vite preview",
-    "start": "vite",
-    "tauri": "DATABASE_URL='sqlite:../test.db' tauri",
+    "tauri": "DATABASE_URL='postgres://admin:password@localhost:5432/spaced' tauri",
     "bin": "tauri/target/release/spaced"
   },
   "lint-staged": {
     "*.{html,json,md,yaml,yml}": [
       "prettier --check"
     ],
-    "*.{js,md,ts,tsx}": [
+    "*.{js,ts,tsx}": [
       "eslint"
     ]
   },
