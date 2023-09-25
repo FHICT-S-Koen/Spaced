@@ -4,6 +4,7 @@ import { createContext, createSignal } from 'solid-js';
 
 import { Vec2D } from '../lib/vector.js';
 
+// figure out if this is considered the global scope or not and what how that affects applicatoin security.
 const [factor, setFactor] = createSignal(1.2);
 const [scalar, setScalar] = createSignal(1);
 const [absoluteViewportPosition, setAbsoluteViewportPosition] = createSignal(
