@@ -29,9 +29,7 @@ export function ViewportProvider(props: ViewportProps) {
   return (
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore Ignore since getters and setters are already present
-    <ViewportContext.Provider>
-      <main class="absolute h-full w-full">{props.children}</main>
-    </ViewportContext.Provider>
+    <ViewportContext.Provider>{props.children}</ViewportContext.Provider>
   );
 }
 

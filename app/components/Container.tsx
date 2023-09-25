@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import { createMemo, createSignal, type Setter } from 'solid-js';
 
+import { useContextmenu } from './ContextmenuProvider.js';
 import { useViewport } from './ViewportProvider.js';
 import type { Item } from '../lib/types.js';
 import { absoluteToRelative, Vec2D } from '../lib/vector.js';
@@ -12,6 +13,9 @@ type ContainerProps = {
 
 export function Container(properties: ContainerProps) {
   const { absoluteViewportPosition, scalar } = useViewport();
+  const { selectedMenuItem, setAbsoluteMenuPosition, setCallback, setIsOpen } =
+    useContextmenu();
+
   const [selected, setSelected] = createSignal(false);
   const translation = createMemo(() =>
     absoluteToRelative(
@@ -20,6 +24,27 @@ export function Container(properties: ContainerProps) {
       scalar(),
     ),
   );
+  function handleContextmenu(event: MouseEvent) {
+    event.preventDefault();
+    setAbsoluteMenuPosition(translation());
+    setIsOpen((prev) => !prev);
+    setCallback(() => {
+      invoke('update', {
+        ...properties,
+        color: selectedMenuItem(),
+        data: ref.textContent,
+      }).then(() => {
+        properties.mutate((prev) => {
+          const items = [...prev!];
+          items[properties.index] = {
+            ...items[properties.index],
+            color: selectedMenuItem() as string | undefined,
+          };
+          return items;
+        });
+      });
+    });
+  }
   let ref!: HTMLDivElement;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function handleClick(event: MouseEvent) {
@@ -30,7 +55,6 @@ export function Container(properties: ContainerProps) {
     setSelected(false);
   }
   function handleKeyUp(event: KeyboardEvent) {
-    console.log(event.key);
     if (event.shiftKey && event.key === 'Delete') {
       invoke('delete', { id: properties.id }).then(() => {
         properties.mutate((prev) => {
@@ -55,7 +79,6 @@ export function Container(properties: ContainerProps) {
       const text = document.createTextNode('\n');
       const selection = window.getSelection();
       if (selection) {
-        console.log(text);
         const range = selection.getRangeAt(0);
         range.deleteContents();
         range.insertNode(text);
@@ -73,6 +96,7 @@ export function Container(properties: ContainerProps) {
       onKeyUp={handleKeyUp}
       onClick={handleClick}
       onBlur={handleBlur}
+      onContextMenu={handleContextmenu}
       class="absolute min-h-[30px] min-w-[30px] whitespace-pre rounded border bg-white p-1"
       tabIndex="0"
       contenteditable={selected()}

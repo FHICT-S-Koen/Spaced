@@ -3,6 +3,7 @@ import { type Setter, createResource, For } from 'solid-js';
 
 import { Background } from './Background.js';
 import { Container } from './Container.js';
+import { ContextmenuProvider } from './ContextmenuProvider.js';
 import { useViewport, ViewportProvider } from './ViewportProvider.js';
 import type { Item } from '../lib/types.js';
 import {
@@ -70,35 +71,36 @@ export function App() {
   }
   const [data, { mutate }] = createResource<Item[]>(() => invoke('select'));
   return (
-    <div
-      class="h-full w-full overflow-hidden"
-      onPointerMove={handlePointerMove}
-      onWheel={handleWheel}
-      onContextMenu={(e) => {
-        e.preventDefault();
-        console.log(e.target);
-      }}
-    >
-      {/* TODO: resolve FOUC */}
-      <Background />
-      <ViewportProvider>
-        <button
-          onClick={(event) => handleClick(event, mutate)}
-          class="absolute bottom-1 left-1 z-50 rounded border-2 border-slate-600 bg-slate-500 text-white shadow"
+    <ViewportProvider>
+      <ContextmenuProvider>
+        <div
+          id="viewport"
+          class="h-full w-full overflow-hidden"
+          onPointerMove={handlePointerMove}
+          onWheel={handleWheel}
         >
-          Create 🚀
-        </button>
-        <For each={data.latest}>
-          {(item, index) => (
-            <Container
-              index={index()}
-              id={item.id!}
-              {...item}
-              mutate={mutate}
-            />
-          )}
-        </For>
-      </ViewportProvider>
-    </div>
+          {/* TODO: resolve FOUC */}
+          <Background />
+          <main class="absolute h-full w-full">
+            <button
+              onClick={(event) => handleClick(event, mutate)}
+              class="absolute bottom-1 left-1 z-50 rounded border-2 border-slate-600 bg-slate-500 text-white shadow"
+            >
+              Create 🚀
+            </button>
+            <For each={data.latest}>
+              {(item, index) => (
+                <Container
+                  index={index()}
+                  id={item.id!}
+                  {...item}
+                  mutate={mutate}
+                />
+              )}
+            </For>
+          </main>
+        </div>
+      </ContextmenuProvider>
+    </ViewportProvider>
   );
 }
