@@ -1,60 +1,95 @@
 import { invoke } from '@tauri-apps/api/tauri';
-import type { Setter } from 'solid-js';
-import { createSignal } from 'solid-js';
+import { createMemo, createSignal, type Setter } from 'solid-js';
 
-import type { Item } from './App.js';
-import type { Vec2D } from '../lib/vector.js';
+import { useViewport } from './ViewportProvider.js';
+import type { Item } from '../lib/types.js';
+import { absoluteToRelative, Vec2D } from '../lib/vector.js';
 
-type ContainerProperties = {
-  id: number;
-  text: string;
-  translation: Vec2D;
-  scale: number;
+type ContainerProps = {
+  index: number;
   mutate: Setter<Item[] | undefined>;
-};
+} & Item;
 
-export function Container(properties: ContainerProperties) {
+export function Container(properties: ContainerProps) {
+  const { absoluteViewportPosition, scalar } = useViewport();
+  const [selected, setSelected] = createSignal(false);
+  const translation = createMemo(() =>
+    absoluteToRelative(
+      new Vec2D(properties.x, properties.y),
+      absoluteViewportPosition(),
+      scalar(),
+    ),
+  );
   let ref!: HTMLDivElement;
-  const [toggle, setToggle] = createSignal(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function handleClick(event: MouseEvent) {
+    setSelected(true);
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function handleBlur(event: FocusEvent) {
+    setSelected(false);
+  }
   function handleKeyUp(event: KeyboardEvent) {
-    console.log(properties.id);
-    if (event.key === 'Delete') {
+    console.log(event.key);
+    if (event.shiftKey && event.key === 'Delete') {
       invoke('delete', { id: properties.id }).then(() => {
         properties.mutate((prev) => {
-          console.log(prev);
-          console.log(prev!.findIndex(({ id }) => id === properties.id));
-
-          const items = prev;
-          console.log(items);
-          items?.pop();
-          // items!.splice(
-          //   prev!.findIndex(({ id }) => id === properties.id),
-          //   1,
-          // );
+          // TODO: needs to be copied?
+          const items = [...prev!];
+          items?.splice(properties.index, 1);
           return items;
         });
       });
+    } else if (event.key === 'Escape') {
+      ref.blur();
+    }
+    invoke('update', {
+      ...properties,
+      data: ref.textContent,
+    });
+  }
+  // eslint-disable-next-line unicorn/consistent-function-scoping
+  function handleBeforeInput(event: InputEvent) {
+    if (event.inputType === 'insertParagraph') {
+      event.preventDefault();
+      const text = document.createTextNode('\n');
+      const selection = window.getSelection();
+      if (selection) {
+        console.log(text);
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(text);
+        range.setStartAfter(text);
+        range.setEndAfter(text);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
     }
   }
   return (
     <div
       ref={ref}
+      onBeforeInput={handleBeforeInput}
       onKeyUp={handleKeyUp}
-      onClick={() => setToggle(true)}
-      onBlur={() => setToggle(false)}
-      class="absolute h-12 w-12 rounded border bg-white"
-      tabIndex={0}
+      onClick={handleClick}
+      onBlur={handleBlur}
+      class="absolute min-h-[30px] min-w-[30px] whitespace-pre rounded border bg-white p-1"
+      tabIndex="0"
+      contenteditable={selected()}
       style={{
-        'border-color': toggle() ? 'black' : '',
+        'border-color': selected() ? 'black' : '',
         'transform-origin': 'top left',
+        'background-color': properties.color || 'transparent',
+        'pointer-events': 'all',
+        'line-height': '1rem',
         translate: `
-          ${properties.translation.x}px
-          ${-properties.translation.y}px
+          ${translation().x}px
+          ${-translation().y}px
         `,
-        scale: `${properties.scale}`,
+        scale: `${scalar()}`,
       }}
     >
-      {properties.text}
+      {properties.data}
     </div>
   );
 }

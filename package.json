@@ -16,7 +16,7 @@
     "prettier": "npx prettier app --check",
     "prettier:fix": "npm run prettier -- --write",
     "serve": "vite preview",
-    "tauri": "DATABASE_URL='postgres://admin:password@localhost:5432/spaced' tauri",
+    "tauri": "tauri",
     "bin": "tauri/target/release/spaced"
   },
   "lint-staged": {
