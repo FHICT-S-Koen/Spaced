@@ -17,8 +17,8 @@ const [absoluteMenuPosition, setAbsoluteMenuPosition] = createSignal(
   new Vec2D(0, 0),
 );
 const [selectedMenuItem, setSelectedMenuItem] = createSignal();
-let callback: () => Promise<void>;
-function setCallback(cb: () => Promise<void>) {
+let callback: () => void;
+function setCallback(cb: () => void) {
   callback = cb;
 }
 
@@ -49,55 +49,54 @@ export function ContextmenuProvider(props: ContextmenuProps) {
   );
 
   // eslint-disable-next-line unicorn/consistent-function-scoping
-  async function handleClick(event: MouseEvent, color: string) {
+  function handleClick(event: MouseEvent, color: string) {
     setSelectedMenuItem(color);
     setIsOpen(false);
-    await callback();
+    callback();
   }
 
   return (
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore Ignore since getters and setters are already present
     <MenuContext.Provider>
-      <>
-        <Portal mount={document.querySelector('#viewport')!}>
-          <Show when={isOpen()}>
-            <ul
-              class="absolute z-[99999] rounded"
-              style={{
-                'transform-origin': 'top left',
-                translate: `
+      {/* TODO: probably don't need this */}
+      <Portal mount={document.querySelector('#viewport')!}>
+        <Show when={isOpen()}>
+          <ul
+            class="absolute z-[99999] rounded"
+            style={{
+              'transform-origin': 'top left',
+              translate: `
                       ${translation().x}px
                       ${-translation().y}px
                     `,
-              }}
+            }}
+          >
+            <For
+              each={[
+                { color: '#ffa75a', thing: 'Domain event' },
+                { color: '#fffaba', thing: 'Actor' },
+                { color: '#abb3ff', thing: 'Command' },
+                { color: '#ccacd7', thing: 'Business process' },
+                { color: '#f6d53d', thing: 'Aggregrate' },
+                { color: '#eda2c4', thing: 'External system' },
+                { color: '#d0e36c', thing: 'Read model' },
+                { color: '#f096a0', thing: 'Hotspot' },
+              ]}
             >
-              <For
-                each={[
-                  { color: '#ffa75a', thing: 'Domain event' },
-                  { color: '#fffaba', thing: 'Actor' },
-                  { color: '#abb3ff', thing: 'Command' },
-                  { color: '#ccacd7', thing: 'Business process' },
-                  { color: '#f6d53d', thing: 'Aggregrate' },
-                  { color: '#eda2c4', thing: 'External system' },
-                  { color: '#d0e36c', thing: 'Read model' },
-                  { color: '#f096a0', thing: 'Hotspot' },
-                ]}
-              >
-                {({ color, thing }) => (
-                  <li
-                    onClick={(e) => handleClick(e, color)}
-                    style={{ 'background-color': color }}
-                  >
-                    {thing}
-                  </li>
-                )}
-              </For>
-            </ul>
-          </Show>
-        </Portal>
-        {props.children}
-      </>
+              {({ color, thing }) => (
+                <li
+                  onClick={(e) => handleClick(e, color)}
+                  style={{ 'background-color': color }}
+                >
+                  {thing}
+                </li>
+              )}
+            </For>
+          </ul>
+        </Show>
+      </Portal>
+      {props.children}
     </MenuContext.Provider>
   );
 }

@@ -4,6 +4,7 @@ import { type Setter, createResource, For } from 'solid-js';
 import { Background } from './Background.js';
 import { Container } from './Container.js';
 import { ContextmenuProvider } from './ContextmenuProvider.js';
+import { useSelection } from './SelectionProvider.js';
 import { useViewport, ViewportProvider } from './ViewportProvider.js';
 import type { Item } from '../lib/types.js';
 import {
@@ -23,12 +24,35 @@ export function App() {
     setAbsoluteViewportPosition,
     setScalar,
   } = useViewport();
+  const { getSelected } = useSelection();
+  const [data, { mutate }] = createResource<Item[]>(() => invoke('select'));
 
   function handlePointerMove(event: PointerEvent) {
     pointerDelta = new Vec2D(event.clientX, -event.clientY)
       .sub(lastRelativePointerPosition)
       .div(scalar());
-    if (event.buttons === 1) {
+    if (event.shiftKey && event.buttons === 1) {
+      const selected = getSelected();
+      const items = data.latest?.map((item) =>
+        selected.has(item.id!)
+          ? {
+              ...item,
+              x: item.x + pointerDelta.x,
+              y: item.y + pointerDelta.y,
+            }
+          : item,
+      );
+      for (const item of items!
+        .map((item) => ({
+          ...item,
+          x: Math.floor(item.x),
+          y: Math.floor(item.y),
+        }))
+        .filter((item) => selected.has(item.id!))) {
+        invoke('update', item);
+      }
+      mutate(items);
+    } else if (event.buttons === 1) {
       setAbsoluteViewportPosition((prev) => prev.add(pointerDelta.neg()));
     }
     lastRelativePointerPosition = new Vec2D(event.clientX, -event.clientY);
@@ -69,7 +93,6 @@ export function App() {
       setScalar((prev) => prev / factor());
     }
   }
-  const [data, { mutate }] = createResource<Item[]>(() => invoke('select'));
   return (
     <ViewportProvider>
       <ContextmenuProvider>

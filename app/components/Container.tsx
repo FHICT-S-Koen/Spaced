@@ -1,7 +1,8 @@
 import { invoke } from '@tauri-apps/api/tauri';
-import { createMemo, createSignal, type Setter } from 'solid-js';
+import { createMemo, type Setter } from 'solid-js';
 
 import { useContextmenu } from './ContextmenuProvider.js';
+import { useSelection } from './SelectionProvider.js';
 import { useViewport } from './ViewportProvider.js';
 import type { Item } from '../lib/types.js';
 import { absoluteToRelative, Vec2D } from '../lib/vector.js';
@@ -15,8 +16,9 @@ export function Container(properties: ContainerProps) {
   const { absoluteViewportPosition, scalar } = useViewport();
   const { selectedMenuItem, setAbsoluteMenuPosition, setCallback, setIsOpen } =
     useContextmenu();
-
-  const [selected, setSelected] = createSignal(false);
+  const { getSelected, holdingCtrl, holdingShift, register, unregister } =
+    useSelection();
+  const selected = createMemo(() => getSelected().has(properties.id!));
   const translation = createMemo(() =>
     absoluteToRelative(
       new Vec2D(properties.x, properties.y),
@@ -39,6 +41,7 @@ export function Container(properties: ContainerProps) {
           items[properties.index] = {
             ...items[properties.index],
             color: selectedMenuItem() as string | undefined,
+            data: ref.textContent!,
           };
           return items;
         });
@@ -46,13 +49,16 @@ export function Container(properties: ContainerProps) {
     });
   }
   let ref!: HTMLDivElement;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  function handleClick(event: MouseEvent) {
-    setSelected(true);
+  function handleClick() {
+    register(properties.id!);
   }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  function handleBlur(event: FocusEvent) {
-    setSelected(false);
+  function handleBlur() {
+    console.log(holdingCtrl(), holdingShift());
+    if (holdingCtrl() || holdingShift()) {
+      return;
+    }
+    console.log(properties.data);
+    unregister(properties.id!);
   }
   function handleKeyUp(event: KeyboardEvent) {
     if (event.shiftKey && event.key === 'Delete') {
@@ -69,6 +75,9 @@ export function Container(properties: ContainerProps) {
     }
     invoke('update', {
       ...properties,
+      // TODO: create class with normalize method for items...
+      x: Math.floor(properties.x),
+      y: Math.floor(properties.y),
       data: ref.textContent,
     });
   }
@@ -97,11 +106,13 @@ export function Container(properties: ContainerProps) {
       onClick={handleClick}
       onBlur={handleBlur}
       onContextMenu={handleContextmenu}
-      class="absolute min-h-[30px] min-w-[30px] whitespace-pre rounded border bg-white p-1"
+      class="absolute min-h-[30px] min-w-[30px] whitespace-pre p-1 outline outline-1"
       tabIndex="0"
       contenteditable={selected()}
       style={{
-        'border-color': selected() ? 'black' : '',
+        'outline-color': selected()
+          ? 'black'
+          : properties.color || (properties.data && 'transparent'),
         'transform-origin': 'top left',
         'background-color': properties.color || 'transparent',
         'pointer-events': 'all',
