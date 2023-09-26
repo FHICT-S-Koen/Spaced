@@ -53,11 +53,9 @@ export function Container(properties: ContainerProps) {
     register(properties.id!);
   }
   function handleBlur() {
-    console.log(holdingCtrl(), holdingShift());
     if (holdingCtrl() || holdingShift()) {
       return;
     }
-    console.log(properties.data);
     unregister(properties.id!);
   }
   function handleKeyUp(event: KeyboardEvent) {
@@ -80,6 +78,16 @@ export function Container(properties: ContainerProps) {
       y: Math.floor(properties.y),
       data: ref.textContent,
     });
+    // .then(() => {
+    //   properties.mutate((prev) => {
+    //     const items = [...prev!];
+    //     items[properties.index] = {
+    //       ...items[properties.index],
+    //       data: ref.textContent!,
+    //     };
+    //     return items;
+    //   }, {  });
+    // });
   }
   // eslint-disable-next-line unicorn/consistent-function-scoping
   function handleBeforeInput(event: InputEvent) {

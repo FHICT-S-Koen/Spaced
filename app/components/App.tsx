@@ -7,6 +7,7 @@ import { ContextmenuProvider } from './ContextmenuProvider.js';
 import { useSelection } from './SelectionProvider.js';
 import { useViewport, ViewportProvider } from './ViewportProvider.js';
 import type { Item } from '../lib/types.js';
+import { debounce } from '../lib/utils.js';
 import {
   relativeToAbsolute,
   scaleViewportOutFrom,
@@ -49,7 +50,9 @@ export function App() {
           y: Math.floor(item.y),
         }))
         .filter((item) => selected.has(item.id!))) {
-        invoke('update', item);
+        debounce(async () => {
+          await invoke('update', item);
+        }, 100)();
       }
       mutate(items);
     } else if (event.buttons === 1) {
