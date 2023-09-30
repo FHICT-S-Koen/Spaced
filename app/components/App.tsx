@@ -60,7 +60,7 @@ export function App() {
       onWheel={handleWheel}
     >
       {/* TODO: resolve FOUC */}
-      <Background />
+      <Background scalar={scalar()} pos={absoluteViewportPosition()} />
       <main class="absolute h-full w-full">
         <For
           each={[
