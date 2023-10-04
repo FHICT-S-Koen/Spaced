@@ -3,8 +3,12 @@
 @tailwind utilities;
 
 body {
-  background-color: #999999;
+  background-color: white;
   text-rendering: optimizeLegibility;
   overflow: hidden;
+}
+
+* {
   user-select: none;
+  overflow: hidden;
 }
