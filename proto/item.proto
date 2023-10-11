@@ -1,0 +1,22 @@
+syntax = "proto3";
+package item;
+
+message ItemRequest {
+  int32 id = 1;
+  int32 x = 2;
+  int32 y = 3;
+  string color = 4;
+  string data = 5;
+}
+
+message ItemResponse {
+  int32 id = 1;
+  int32 x = 2;
+  int32 y = 3;
+  string color = 4;
+  string data = 5;
+}
+
+service Item {
+  rpc UnaryItem(ItemRequest) returns (ItemResponse) {}
+}

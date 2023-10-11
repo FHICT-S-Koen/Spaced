@@ -1,0 +1,11 @@
+[workspace]
+members = [
+  "services/item_producer",
+  "tauri"
+]
+resolver = "2"
+
+[workspace.package]
+repository = "https://github.com/FHICT-S-Koen/Spaced"
+edition = "2021"
+rust-version = "1.70"

@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  labels:
+    app: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        - name: api
+          image: k3d-spaced:5000/api:v0.1
+          ports:
+            - containerPort: 50051
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: '1'

@@ -32,3 +32,11 @@ docker compose up -d
 cd tauri
 sqlx migrate run
 ```
+
+**Protoc**
+
+https://www.npmjs.com/package/grpc-web
+
+```sh
+protoc proto/item.proto --js_out=import_style=esm:generated --grpc-web_out=import_style=esm,mode=grpcwebtext:generated
+```
