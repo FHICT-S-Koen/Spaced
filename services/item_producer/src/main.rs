@@ -34,7 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
   let addr = "127.0.0.1:50051".parse().unwrap();
   let greeter = ItemMessanger::default();
 
-  println!("Item server listening on {}", addr);
+  // println!("Item server listening on {}", addr);
 
   Server::builder()
     .add_service(ItemServer::new(greeter))

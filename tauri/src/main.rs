@@ -7,19 +7,58 @@ use serde::{Deserialize, Serialize};
 use sqlx::{postgres::PgPool, Pool, Postgres};
 use tauri::State;
 
+use item::item_client::ItemClient;
+use item::{ItemRequest, ItemResponse};
+use tokio::sync::Mutex;
+use tonic::Response;
+use tonic::transport::Channel;
+
+pub mod item {
+  tonic::include_proto!("item");
+}
+
+struct Client(Mutex<ItemClient<Channel>>);
+
+impl ItemResponse {
+  fn into(self) -> Item {
+    return Item { id: self.id, x: self.x, y: self.y, color: Some(self.color), data: self.data }
+  }
+}
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
   let db_connection_str = std::env::var("DATABASE_URL")
     .unwrap_or_else(|_| "postgres://admin:password@localhost:5432/spaced".to_string());
-
   let conn = PgPool::connect(&db_connection_str).await?;
+  let client = ItemClient::connect("http://127.0.0.1:50051").await?;
+
   tauri::Builder::default()
     .manage(conn)
-    .invoke_handler(tauri::generate_handler![select, insert, update, delete])
+    .manage(Client(client.into()))
+    .invoke_handler(tauri::generate_handler![select, insert, update, delete, request])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 
   Ok(())
+}
+
+#[tauri::command]
+async fn request(client: State<'_, Client>) -> Result<Item, ()> {
+  let request = tonic::Request::new(ItemRequest {
+    id: 0,
+    x: 0,
+    y: 0,
+    color: "black".into(),
+    data: "test".into(),
+  });
+
+  let response = client.0.lock().await.unary_item(request).await.unwrap();
+
+  println!("RESPONSE={:?}", response);
+  // let d = response.into_inner().into();
+  // println!("RESPONSE={:?}", &d);
+
+  Ok(response.into_inner().into())
 }
 
 #[derive(sqlx::FromRow, Serialize, Deserialize, Debug)]

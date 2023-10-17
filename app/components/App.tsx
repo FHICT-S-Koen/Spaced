@@ -109,6 +109,14 @@ export function App() {
           <Background />
           <main class="absolute h-full w-full">
             <button
+              onClick={() => {
+                invoke('request').then(console.log);
+              }}
+              class="black absolute h-4 w-4"
+            >
+              click
+            </button>
+            <button
               onClick={(event) => handleClick(event, mutate)}
               class="absolute bottom-1 left-1 z-50 rounded border-2 border-slate-600 bg-slate-500 text-white shadow"
             >

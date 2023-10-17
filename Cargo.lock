@@ -3110,12 +3110,15 @@ name = "spaced"
 version = "0.0.0"
 dependencies = [
  "anyhow",
+ "prost",
  "serde",
  "serde_json",
  "sqlx",
  "tauri",
  "tauri-build",
  "tokio",
+ "tonic",
+ "tonic-build",
 ]
 
 [[package]]
