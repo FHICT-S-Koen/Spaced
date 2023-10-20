@@ -3,7 +3,7 @@ import solidPlugin from 'vite-plugin-solid';
 
 export default defineConfig(async () => ({
   plugins: [solidPlugin()],
-  root: 'app',
+  root: 'srcs/app',
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   // prevent vite from obscuring rust errors
   clearScreen: false,
@@ -16,6 +16,6 @@ export default defineConfig(async () => ({
   envPrefix: ['VITE_', 'TAURI_'],
   build: {
     target: 'esnext',
-    outDir: '../dist',
+    outDir: '../../dist',
   },
 }));

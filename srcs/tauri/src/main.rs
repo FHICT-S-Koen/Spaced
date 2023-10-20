@@ -10,7 +10,6 @@ use tauri::State;
 use item::item_client::ItemClient;
 use item::{ItemRequest, ItemResponse};
 use tokio::sync::Mutex;
-use tonic::Response;
 use tonic::transport::Channel;
 
 pub mod item {
@@ -21,7 +20,13 @@ struct Client(Mutex<ItemClient<Channel>>);
 
 impl ItemResponse {
   fn into(self) -> Item {
-    return Item { id: self.id, x: self.x, y: self.y, color: Some(self.color), data: self.data }
+    return Item {
+      id: self.id,
+      x: self.x,
+      y: self.y,
+      color: Some(self.color),
+      data: self.data,
+    };
   }
 }
 
@@ -35,7 +40,9 @@ async fn main() -> anyhow::Result<()> {
   tauri::Builder::default()
     .manage(conn)
     .manage(Client(client.into()))
-    .invoke_handler(tauri::generate_handler![select, insert, update, delete, request])
+    .invoke_handler(tauri::generate_handler![
+      select, insert, update, delete, request
+    ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 
@@ -54,9 +61,7 @@ async fn request(client: State<'_, Client>) -> Result<Item, ()> {
 
   let response = client.0.lock().await.unary_item(request).await.unwrap();
 
-  println!("RESPONSE={:?}", response);
-  // let d = response.into_inner().into();
-  // println!("RESPONSE={:?}", &d);
+  println!("{:?}", response);
 
   Ok(response.into_inner().into())
 }

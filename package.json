@@ -4,20 +4,21 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "build": "vite build --emptyOutDir",
-    "clippy": "cargo clippy --manifest-path tauri/Cargo.toml --all-features --all-targets",
-    "clippy:fix": "npm run clippy -- --fix",
     "dev": "vite",
-    "fmt": "cargo fmt --manifest-path tauri/Cargo.toml --check",
-    "fmt:fix": "cargo fmt --manifest-path tauri/Cargo.toml",
-    "lint": "npx eslint app",
-    "lint:fix": "npm run lint -- --fix",
-    "prepare": "husky install",
-    "prettier": "npx prettier app --check",
-    "prettier:fix": "npm run prettier -- --write",
+    "build": "vite build --emptyOutDir",
     "serve": "vite preview",
+    "lint": "npx eslint srcs/app",
+    "lint:fix": "npx eslint srcs/app --fix",
+    "prettier": "npx prettier srcs/app --check",
+    "prettier:fix": "npx prettier srcs/app --write",
+    "clippy": "cargo clippy --all-features --all-targets",
+    "clippy:fix": "cargo clippy --all-features --all-targets --fix",
+    "fmt": "cargo fmt --check",
+    "fmt:fix": "cargo fmt --check --all",
     "tauri": "tauri",
-    "bin": "tauri/target/release/spaced"
+    "bin": "target/release/spaced",
+    "services": "./scripts/start.sh",
+    "prepare": "husky install"
   },
   "lint-staged": {
     "*.{html,json,md,yaml,yml}": [

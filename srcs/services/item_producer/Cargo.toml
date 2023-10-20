@@ -2,15 +2,10 @@
 name = "item_producer"
 version = "0.0.0"
 description = "The main producer service used to manage items in real-time."
-# repository = { workspace = true }
-edition = "2021"
-rust-version = "1.70"
+repository.workspace = true
+edition.workspace = true
+rust-version.workspace = true
 
-
-# repository = { workspace = true }
-# edition = { workspace = true }
-# rust-version = { workspace = true }
-#
 [[bin]]
 name = "item_producer"
 path = "src/main.rs"
@@ -20,6 +15,9 @@ tonic = "0.10"
 prost = "0.12"
 anyhow = "1"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+rdkafka = "0.34.0"
+log = { workspace = true }
+env_logger = { workspace = true }
 
 [build-dependencies]
 tonic-build = "0.10"

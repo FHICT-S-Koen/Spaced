@@ -1,7 +1,8 @@
 [workspace]
 members = [
-  "services/item_producer",
-  "tauri"
+  "srcs/services/item_producer",
+  "srcs/services/item_consumer",
+  "srcs/tauri",
 ]
 resolver = "2"
 
@@ -9,3 +10,7 @@ resolver = "2"
 repository = "https://github.com/FHICT-S-Koen/Spaced"
 edition = "2021"
 rust-version = "1.70"
+
+[workspace.dependencies]
+log = "0.4.0"
+env_logger = "0.9.0"
