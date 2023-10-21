@@ -18,6 +18,8 @@
     "tauri": "tauri",
     "bin": "target/release/spaced",
     "services": "./scripts/start.sh",
+    "producer": "RUST_LOG=info cargo run -p item_producer",
+    "consumer": "RUST_LOG=info cargo run -p item_consumer",
     "prepare": "husky install"
   },
   "lint-staged": {

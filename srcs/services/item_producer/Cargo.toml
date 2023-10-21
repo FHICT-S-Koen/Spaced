@@ -1,6 +1,6 @@
 [package]
 name = "item_producer"
-version = "0.0.0"
+version.workspace = true
 description = "The main producer service used to manage items in real-time."
 repository.workspace = true
 edition.workspace = true
@@ -10,14 +10,14 @@ rust-version.workspace = true
 name = "item_producer"
 path = "src/main.rs"
 
-[dependencies]
-tonic = "0.10"
-prost = "0.12"
-anyhow = "1"
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
-rdkafka = "0.34.0"
-log = { workspace = true }
-env_logger = { workspace = true }
-
 [build-dependencies]
-tonic-build = "0.10"
+tonic-build.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+env_logger.workspace = true
+log.workspace = true
+prost.workspace = true
+rdkafka.workspace = true
+tokio.workspace = true
+tonic.workspace = true

@@ -1,23 +1,18 @@
 [package]
 name = "item_consumer"
-version = "0.0.0"
+version.workspace = true
 description = "The main producer service used to manage items in real-time."
-# repository = { workspace = true }
-edition = "2021"
-rust-version = "1.70"
+repository.workspace = true
+edition.workspace = true
+rust-version.workspace = true
 
-
-# repository = { workspace = true }
-# edition = { workspace = true }
-# rust-version = { workspace = true }
-#
 [[bin]]
 name = "item_consumer"
 path = "src/main.rs"
 
 [dependencies]
-anyhow = "1"
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
-rdkafka = "0.34.0"
-log = { workspace = true }
-env_logger = { workspace = true }
+anyhow.workspace = true
+env_logger.workspace = true
+log.workspace = true
+rdkafka.workspace = true
+tokio.workspace = true

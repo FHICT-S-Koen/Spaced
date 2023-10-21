@@ -3,6 +3,7 @@
 ### Prequisites
 
 - Docker
+- Protoc
 - Rustc & Cargo
 - sqlx-cli
 - Node 18 + NPM
