@@ -110,7 +110,7 @@ export function App() {
           <main class="absolute h-full w-full">
             <button
               onClick={() => {
-                invoke('request').then(console.log);
+                invoke('fetch_nearby_items').then(console.log);
               }}
               class="black absolute h-4 w-4"
             >

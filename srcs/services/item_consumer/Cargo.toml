@@ -10,9 +10,14 @@ rust-version.workspace = true
 name = "item_consumer"
 path = "src/main.rs"
 
+[build-dependencies]
+prost-build.workspace = true
+
 [dependencies]
 anyhow.workspace = true
 env_logger.workspace = true
 log.workspace = true
 rdkafka.workspace = true
+prost.workspace = true
+sqlx.workspace = true
 tokio.workspace = true

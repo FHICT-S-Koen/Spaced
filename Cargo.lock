@@ -1686,7 +1686,10 @@ dependencies = [
  "anyhow",
  "env_logger",
  "log",
+ "prost",
+ "prost-build",
  "rdkafka",
+ "sqlx",
  "tokio",
 ]
 

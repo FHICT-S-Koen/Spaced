@@ -34,6 +34,10 @@ cd tauri
 sqlx migrate run
 ```
 
+```sh
+psql postgres://admin:password@localhost:5432/spaced
+```
+
 **Protoc**
 
 https://www.npmjs.com/package/grpc-web

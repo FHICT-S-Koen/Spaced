@@ -8,7 +8,7 @@ use rdkafka::consumer::{CommitMode, Consumer, ConsumerContext, Rebalance};
 use rdkafka::error::KafkaResult;
 use rdkafka::message::{Headers, Message};
 use rdkafka::topic_partition_list::TopicPartitionList;
-use rdkafka::util::get_rdkafka_version;
+use sqlx::{postgres::PgPool, Pool, Postgres};
 
 struct CustomContext;
 
@@ -30,13 +30,22 @@ impl ConsumerContext for CustomContext {
 
 type LoggingConsumer = StreamConsumer<CustomContext>;
 
+#[derive(sqlx::FromRow, Debug)]
+struct Item {
+  id: i32,
+  x: i32,
+  y: i32,
+  data: String,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
   env_logger::init();
+  let db_connection_str = std::env::var("DATABASE_URL")
+    .unwrap_or_else(|_| "postgres://admin:password@localhost:5432/spaced".to_string());
+  let db_connection = PgPool::connect(&db_connection_str).await?;
   info!("Item consumer running");
 
-  let (version_n, version_s) = get_rdkafka_version();
-  info!("rd_kafka_version: 0x{:08x}, {}", version_n, version_s);
   let context = CustomContext;
   let consumer: LoggingConsumer = ClientConfig::new()
     .set("group.id", "example_consumer_group_id")
@@ -52,20 +61,53 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .subscribe(&vec!["item"])
     .expect("Can't subscribe to specified topics");
 
+  poll(consumer, db_connection).await;
+  Ok(())
+}
+
+async fn fetch_items(
+  pool: &Pool<Postgres>,
+  xmin: i32,
+  ymin: i32,
+  xmax: i32,
+  ymax: i32,
+) -> anyhow::Result<Vec<Item>> {
+  let rows = sqlx::query_as!(
+    Item,
+    r#"
+      SELECT *
+      FROM item
+      WHERE x BETWEEN $1 AND $3
+        AND y BETWEEN $2 AND $4;
+      "#,
+    xmin,
+    ymin,
+    xmax,
+    ymax
+  )
+  .fetch_all(&*pool)
+  .await?;
+  Ok(rows)
+}
+
+fn send(items: Vec<Item>) {
+
+}
+
+use prost::Message as ProtoMessage;
+
+pub mod bounding {
+  include!(concat!(env!("OUT_DIR"), "/bounding.rs"));
+}
+
+async fn poll(consumer: LoggingConsumer, pool: Pool<Postgres>) {
   loop {
     match consumer.recv().await {
       Err(e) => info!("Kafka error: {}", e),
       Ok(m) => {
-        let payload = match m.payload_view::<str>() {
-          None => "",
-          Some(Ok(s)) => s,
-          Some(Err(e)) => {
-            info!("Error while deserializing message payload: {:?}", e);
-            ""
-          }
-        };
+        let payload = bounding::BoundingBox::decode(m.payload().unwrap()).unwrap();
         info!(
-          "key: '{:?}', payload: '{}', topic: {}, partition: {}, offset: {}, timestamp: {:?}",
+          "key: '{:?}', payload: '{:?}', topic: {}, partition: {}, offset: {}, timestamp: {:?}",
           m.key(),
           payload,
           m.topic(),
@@ -78,6 +120,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             info!("  Header {:#?}: {:?}", header.key, header.value);
           }
         }
+        let items = fetch_items(&pool, payload.xmin, payload.ymin, payload.xmax, payload.ymax).await.unwrap();
+        info!("{:#?}", items.len());
+        send(items);
         consumer.commit_message(&m, CommitMode::Async).unwrap();
       }
     };

@@ -6,15 +6,19 @@ use std::time::Duration;
 use rdkafka::config::ClientConfig;
 use rdkafka::message::{Header, OwnedHeaders};
 use rdkafka::producer::{FutureProducer, FutureRecord};
-use rdkafka::util::get_rdkafka_version;
 
 use tonic::{transport::Server, Request, Response, Status};
 
 use item::item_server::{Item, ItemServer};
 use item::{ItemRequest, ItemResponse};
+use bounding::BoundingBox;
 
+use prost::Message as ProtoMessage;
 pub mod item {
   tonic::include_proto!("item");
+}
+pub mod bounding {
+  tonic::include_proto!("bounding");
 }
 
 #[derive(Default)]
@@ -36,9 +40,6 @@ impl Item for ItemMessanger {
       data: "test".to_string(),
     };
 
-    let (version_n, version_s) = get_rdkafka_version();
-    info!("rd_kafka_version: 0x{:08x}, {}", version_n, version_s);
-
     let producer: &FutureProducer = &ClientConfig::new()
       .set("bootstrap.servers", "localhost:9092")
       .set("message.timeout.ms", "5000")
@@ -46,11 +47,17 @@ impl Item for ItemMessanger {
       .expect("Producer creation error");
 
     let future = async move {
+      let bounding = BoundingBox {
+        xmin: 0,
+        ymin: 0,
+        xmax: 0,
+        ymax: 0,
+      }.encode_to_vec();
       let delivery_status = producer
         .send(
           FutureRecord::to("item")
-            .payload(&format!("Message {}", "test"))
-            .key(&format!("Key {}", "test"))
+            .key(&"bounding".to_string())
+            .payload(bounding.as_slice())
             .headers(OwnedHeaders::new().insert(Header {
               key: "header_key",
               value: Some("header_value"),
