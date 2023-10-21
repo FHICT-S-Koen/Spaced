@@ -3,16 +3,20 @@
 
 use std::env;
 
+use item::ItemListResponse;
+use item::item_client::ItemClient;
+use utils::BoundingBox;
 use serde::{Deserialize, Serialize};
 use tauri::State;
-
-use item::item_client::ItemClient;
-use item::{ItemRequest, ItemResponse};
 use tokio::sync::Mutex;
 use tonic::transport::Channel;
+use tonic::Request;
 
 pub mod item {
   tonic::include_proto!("item");
+}
+pub mod utils {
+  tonic::include_proto!("utils");
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -22,17 +26,17 @@ struct Item {
   y: i32,
   data: String,
 }
-
 struct Client(Mutex<ItemClient<Channel>>);
 
-impl ItemResponse {
-  fn into(self) -> Item {
-    return Item {
-      id: self.id,
-      x: self.x,
-      y: self.y,
-      data: self.data,
-    };
+impl ItemListResponse {
+  fn into(self) -> Vec<Item> {
+    let item_resp = self.item_response;
+    item_resp.into_iter().map(|i| Item {
+      id: i.id,
+      x: i.x,
+      y: i.y,
+      data: i.data,
+    }).collect()
   }
 }
 
@@ -50,22 +54,31 @@ async fn main() -> anyhow::Result<()> {
 }
 
 #[tauri::command]
-async fn fetch_nearby_items(client: State<'_, Client>) -> Result<Item, ()> {
-  let request = tonic::Request::new(ItemRequest {
-    id: 0,
-    x: 0,
-    y: 0,
-    color: "black".into(),
-    data: "test".into(),
-  });
+async fn fetch_nearby_items(
+  client: State<'_, Client>,
+  xmin: i32,
+  ymin: i32,
+  xmax: i32,
+  ymax: i32,
+) -> Result<Vec<Item>, ()> {
+  println!("{:?}", "test");
 
-  let response = client.0.lock().await.unary_item(request).await.unwrap();
+  let response = client
+    .0
+    .lock()
+    .await
+    .nearby_items(Request::new(BoundingBox {
+      xmin,
+      ymin,
+      xmax,
+      ymax,
+    }))
+    .await
+    .unwrap();
 
   println!("{:?}", response);
-
   Ok(response.into_inner().into())
 }
-
 
 // #[tauri::command]
 // async fn select(pool: State<'_, Pool<Postgres>>) -> Result<Vec<Item>, ()> {

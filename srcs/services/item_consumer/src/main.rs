@@ -1,12 +1,16 @@
 #[macro_use]
 extern crate log;
 
+use std::time::Duration;
+
+use item::ItemResponse;
 use rdkafka::client::ClientContext;
 use rdkafka::config::{ClientConfig, RDKafkaLogLevel};
 use rdkafka::consumer::stream_consumer::StreamConsumer;
 use rdkafka::consumer::{CommitMode, Consumer, ConsumerContext, Rebalance};
 use rdkafka::error::KafkaResult;
-use rdkafka::message::{Headers, Message};
+use rdkafka::message::{Header, Headers, Message, OwnedHeaders};
+use rdkafka::producer::{FutureProducer, FutureRecord};
 use rdkafka::topic_partition_list::TopicPartitionList;
 use sqlx::{postgres::PgPool, Pool, Postgres};
 
@@ -57,11 +61,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .create_with_context(context)
     .expect("Consumer creation failed");
 
+  let producer: FutureProducer = ClientConfig::new()
+    .set("bootstrap.servers", "localhost:9092")
+    .set("message.timeout.ms", "5000")
+    .create()
+    .expect("Producer creation error");
+
   consumer
     .subscribe(&vec!["item"])
     .expect("Can't subscribe to specified topics");
 
-  poll(consumer, db_connection).await;
+  poll(consumer, &producer, db_connection).await;
   Ok(())
 }
 
@@ -90,22 +100,52 @@ async fn fetch_items(
   Ok(rows)
 }
 
-fn send(items: Vec<Item>) {
-
-}
-
+#[allow(unused_imports)] // Used to encode protobufs
 use prost::Message as ProtoMessage;
 
-pub mod bounding {
-  include!(concat!(env!("OUT_DIR"), "/bounding.rs"));
+use crate::item::ItemListResponse;
+
+pub mod utils {
+  include!(concat!(env!("OUT_DIR"), "/utils.rs"));
+}
+pub mod item {
+  include!(concat!(env!("OUT_DIR"), "/item.rs"));
 }
 
-async fn poll(consumer: LoggingConsumer, pool: Pool<Postgres>) {
+async fn send(producer: &FutureProducer, items: item::ItemListResponse) {
+  // let future = async move {
+    let bounding = items.encode_to_vec();
+    let _ = producer.send(
+      FutureRecord::to("processed_item")
+        .key(&"processed_item".to_string())
+        .payload(bounding.as_slice())
+        .headers(OwnedHeaders::new().insert(Header {
+          key: "header_key",
+          value: Some("header_value"),
+        })),
+      Duration::from_secs(0),
+    ).await;
+  // };
+  // future.await;
+}
+
+impl ItemListResponse {
+  fn from(items: Vec<Item>) -> ItemListResponse {
+    ItemListResponse { item_response: items.into_iter().map(|i| ItemResponse {
+      id: i.id,
+      x: i.x,
+      y: i.y,
+      data: i.data,
+    }).collect() }
+  }
+}
+
+async fn poll(consumer: LoggingConsumer, producer: &FutureProducer, pool: Pool<Postgres>) {
   loop {
     match consumer.recv().await {
       Err(e) => info!("Kafka error: {}", e),
       Ok(m) => {
-        let payload = bounding::BoundingBox::decode(m.payload().unwrap()).unwrap();
+        let payload = utils::BoundingBox::decode(m.payload().unwrap()).unwrap();
         info!(
           "key: '{:?}', payload: '{:?}', topic: {}, partition: {}, offset: {}, timestamp: {:?}",
           m.key(),
@@ -120,9 +160,17 @@ async fn poll(consumer: LoggingConsumer, pool: Pool<Postgres>) {
             info!("  Header {:#?}: {:?}", header.key, header.value);
           }
         }
-        let items = fetch_items(&pool, payload.xmin, payload.ymin, payload.xmax, payload.ymax).await.unwrap();
+        let items = fetch_items(
+          &pool,
+          payload.xmin,
+          payload.ymin,
+          payload.xmax,
+          payload.ymax,
+        )
+        .await
+        .unwrap();
         info!("{:#?}", items.len());
-        send(items);
+        send(producer, ItemListResponse::from(items)).await;
         consumer.commit_message(&m, CommitMode::Async).unwrap();
       }
     };

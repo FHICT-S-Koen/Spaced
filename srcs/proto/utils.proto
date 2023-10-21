@@ -1,5 +1,5 @@
 syntax = "proto3";
-package bounding;
+package utils;
 
 message BoundingBox {
   int32 xmin = 1;

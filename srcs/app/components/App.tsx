@@ -7,7 +7,7 @@ import { ContextmenuProvider } from './ContextmenuProvider.js';
 import { useSelection } from './SelectionProvider.js';
 import { useViewport, ViewportProvider } from './ViewportProvider.js';
 import type { Item } from '../lib/types.js';
-import { debounce } from '../lib/utils.js';
+import { debounce, throttle } from '../lib/utils.js';
 import {
   relativeToAbsolute,
   scaleViewportOutFrom,
@@ -26,7 +26,17 @@ export function App() {
     setScalar,
   } = useViewport();
   const { getSelected } = useSelection();
-  const [data, { mutate }] = createResource<Item[]>(() => invoke('select'));
+  const [data, { mutate }] = createResource<Item[], Vec2D>(
+    absoluteViewportPosition,
+    throttle(async (output) => {
+      return invoke('fetch_nearby_items', {
+        xmin: (output as Vec2D).x - 1000,
+        ymin: (output as Vec2D).y - 1000,
+        xmax: 1000,
+        ymax: 1000,
+      });
+    }, 300),
+  );
 
   function handlePointerMove(event: PointerEvent) {
     pointerDelta = new Vec2D(event.clientX, -event.clientY)
@@ -108,14 +118,6 @@ export function App() {
           {/* TODO: resolve FOUC */}
           <Background />
           <main class="absolute h-full w-full">
-            <button
-              onClick={() => {
-                invoke('fetch_nearby_items').then(console.log);
-              }}
-              class="black absolute h-4 w-4"
-            >
-              click
-            </button>
             <button
               onClick={(event) => handleClick(event, mutate)}
               class="absolute bottom-1 left-1 z-50 rounded border-2 border-slate-600 bg-slate-500 text-white shadow"
