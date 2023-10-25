@@ -30,6 +30,10 @@ docker compose up -d
 ```
 
 ```sh
+protoc -I=srcs/proto/ --go_out=. srcs/proto/*.proto
+```
+
+```sh
 cd tauri
 sqlx migrate run
 ```

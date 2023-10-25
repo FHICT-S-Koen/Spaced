@@ -1,5 +1,6 @@
 syntax = "proto3";
 package item;
+option go_package = "srcs/proto";
 
 import "utils.proto";
 
