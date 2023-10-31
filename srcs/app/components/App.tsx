@@ -29,12 +29,19 @@ export function App() {
   const [data, { mutate }] = createResource<Item[], Vec2D>(
     absoluteViewportPosition,
     throttle(async (output) => {
-      return invoke('fetch_nearby_items', {
-        xmin: (output as Vec2D).x - 1000,
-        ymin: (output as Vec2D).y - 1000,
-        xmax: 1000,
-        ymax: 1000,
-      });
+      console.log(window.innerWidth, window.innerHeight);
+      const bb = {
+        xmin: Math.round((output as Vec2D).x),
+        ymin: -Math.round((output as Vec2D).y),
+        xmax:
+          Math.round((output as Vec2D).x) +
+          Math.round(window.innerWidth / scalar()),
+        ymax:
+          -Math.round((output as Vec2D).y) +
+          Math.round(window.innerHeight / scalar()),
+      };
+      console.log(bb);
+      return await invoke('fetch_nearby_items', bb);
     }, 300),
   );
 
