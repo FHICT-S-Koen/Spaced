@@ -22,6 +22,12 @@ services:
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
     ports:
       - '9092:9092'
+  envoy:
+    image: envoyproxy/envoy:distroless-dev
+    ports:
+      - '10000:10000'
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml
   ###################################
   ###           BUILD             ###
   ###################################

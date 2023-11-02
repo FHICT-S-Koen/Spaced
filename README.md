@@ -59,3 +59,9 @@ _`docker buildx bake` ignores profiles and builds the services anway._
 Ensure to add the kafka container id to `/etc/hosts`, to ensure it can be resolved.
 
 _See <https://stackoverflow.com/questions/43103167/failed-to-resolve-kafka9092-name-or-service-not-known-docker-php-rdkafka>_
+
+**Cert**
+
+```sh
+openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout key.pem -out cert.pem
+```

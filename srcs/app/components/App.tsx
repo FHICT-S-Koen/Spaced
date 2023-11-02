@@ -113,6 +113,9 @@ export function App() {
       setScalar((prev) => prev / factor());
     }
   }
+
+  new WebTransport('https://localhost:4433');
+
   return (
     <ViewportProvider>
       <ContextmenuProvider>
