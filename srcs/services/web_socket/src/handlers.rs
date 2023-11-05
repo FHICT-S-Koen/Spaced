@@ -9,9 +9,12 @@ use tracing::info;
 static REDIS_CHANNEL: &str = "redis";
 
 pub async fn on_connection(socket: Arc<Socket<LocalAdapter>>, _auth: Value) {
-  socket.on("message", |_, data: Value, bin, _| async move {
+  let redis_client = Client::open("redis://127.0.0.1:6379/").expect("Failed to create Redis client");
+  socket.extensions.insert(redis_client);
+
+  socket.on("message", |socket, data: Value, bin, _| async move {
     info!("Received event: {:?} {:?}", data, bin);
-    let client = Client::open("redis://127.0.0.1:6379/").expect("Failed to create Redis client");
+    let client = socket.extensions.get::<Client>().unwrap().clone();
     let mut connection = client
       .get_async_connection()
       .await
@@ -27,7 +30,7 @@ pub async fn on_connection(socket: Arc<Socket<LocalAdapter>>, _auth: Value) {
   });
 
   tokio::spawn(async move {
-    let client = Client::open("redis://127.0.0.1:6379/").expect("Failed to create Redis client");
+    let client = socket.extensions.get::<Client>().unwrap().clone();
     let mut pubsub = client
       .get_async_connection()
       .await

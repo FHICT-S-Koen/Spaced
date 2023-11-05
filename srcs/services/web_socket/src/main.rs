@@ -2,7 +2,6 @@ use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 use axum::{Router, Server};
 use clap::Parser;
-use redis::Client;
 use socketioxide::SocketIo;
 use tower::ServiceBuilder;
 use tower_http::{cors::CorsLayer, services::ServeDir};
