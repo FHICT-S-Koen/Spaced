@@ -45,3 +45,8 @@ services:
     image: spaced/item_consumer:latest
     build:
       dockerfile: srcs/services/item_consumer/Dockerfile
+  web_socket:
+    profiles: ['sevices']
+    image: spaced/web_socket:latest
+    build:
+      dockerfile: srcs/services/web_socket/Dockerfile
