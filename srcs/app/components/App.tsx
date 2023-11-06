@@ -1,6 +1,8 @@
 import { invoke } from '@tauri-apps/api/tauri';
+import axios from 'axios';
 import { type Setter, createResource, For } from 'solid-js';
 
+import { AuthProvider } from './AuthProvider.js';
 import { Background } from './Background.js';
 import { Container } from './Container.js';
 import { ContextmenuProvider } from './ContextmenuProvider.js';
@@ -47,7 +49,8 @@ export function App() {
           Math.round(window.innerHeight / scalar()),
       };
       console.log(bb);
-      return await invoke('fetch_nearby_items', bb);
+      // eslint-disable-next-line unicorn/no-await-expression-member
+      return (await axios.post('http://localhost:8081/item', bb)).data;
     }, 300),
   );
 
@@ -121,44 +124,46 @@ export function App() {
   }
 
   return (
-    <ViewportProvider>
-      <ContextmenuProvider>
-        <WebSocketProvider>
-          <button
-            class="absolute z-50"
-            onClick={() => socket.send('Send message')}
-          >
-            Send message
-          </button>
-          <div
-            id="viewport"
-            class="h-full w-full overflow-hidden"
-            onPointerMove={handlePointerMove}
-            onWheel={handleWheel}
-          >
-            {/* TODO: resolve FOUC */}
-            <Background />
-            <main class="absolute h-full w-full">
-              <button
-                onClick={(event) => handleClick(event, mutate)}
-                class="absolute bottom-1 left-1 z-50 rounded border-2 border-slate-600 bg-slate-500 text-white shadow"
-              >
-                Create 🚀
-              </button>
-              <For each={data.latest}>
-                {(item, index) => (
-                  <Container
-                    index={index()}
-                    id={item.id!}
-                    {...item}
-                    mutate={mutate}
-                  />
-                )}
-              </For>
-            </main>
-          </div>
-        </WebSocketProvider>
-      </ContextmenuProvider>
-    </ViewportProvider>
+    <AuthProvider>
+      <ViewportProvider>
+        <ContextmenuProvider>
+          <WebSocketProvider>
+            <button
+              class="absolute z-50"
+              onClick={() => socket.send('Send message')}
+            >
+              Send message
+            </button>
+            <div
+              id="viewport"
+              class="h-full w-full overflow-hidden"
+              onPointerMove={handlePointerMove}
+              onWheel={handleWheel}
+            >
+              {/* TODO: resolve FOUC */}
+              <Background />
+              <main class="absolute h-full w-full">
+                <button
+                  onClick={(event) => handleClick(event, mutate)}
+                  class="absolute bottom-1 left-1 z-50 rounded border-2 border-slate-600 bg-slate-500 text-white shadow"
+                >
+                  Create 🚀
+                </button>
+                <For each={data.latest}>
+                  {(item, index) => (
+                    <Container
+                      index={index()}
+                      id={item.id!}
+                      {...item}
+                      mutate={mutate}
+                    />
+                  )}
+                </For>
+              </main>
+            </div>
+          </WebSocketProvider>
+        </ContextmenuProvider>
+      </ViewportProvider>
+    </AuthProvider>
   );
 }
