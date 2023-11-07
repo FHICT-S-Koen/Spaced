@@ -35,16 +35,26 @@ services:
   ###################################
   ###           BUILD             ###
   ###################################
-  item_producer:
+  # item_producer:
+  #   profiles: ['sevices']
+  #   image: spaced/item_producer:latest
+  #   build:
+  #     dockerfile: srcs/services/item_producer/Dockerfile
+  # item_consumer:
+  #   profiles: ['sevices']
+  #   image: spaced/item_consumer:latest
+  #   build:
+  #     dockerfile: srcs/services/item_consumer/Dockerfile
+  item_service:
     profiles: ['sevices']
-    image: spaced/item_producer:latest
+    image: spaced/item_service:latest
     build:
-      dockerfile: srcs/services/item_producer/Dockerfile
-  item_consumer:
+      dockerfile: srcs/services/item_service/Dockerfile
+  user_service:
     profiles: ['sevices']
-    image: spaced/item_consumer:latest
+    image: spaced/user_service:latest
     build:
-      dockerfile: srcs/services/item_consumer/Dockerfile
+      dockerfile: srcs/services/user_service/Dockerfile
   web_socket:
     profiles: ['sevices']
     image: spaced/web_socket:latest

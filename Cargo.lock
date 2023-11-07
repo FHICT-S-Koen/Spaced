@@ -1955,20 +1955,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "item_consumer"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "env_logger",
- "log",
- "prost",
- "prost-build",
- "rdkafka",
- "sqlx",
- "tokio",
-]
-
-[[package]]
 name = "item_producer"
 version = "0.0.0"
 dependencies = [

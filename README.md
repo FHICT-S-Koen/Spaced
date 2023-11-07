@@ -35,6 +35,10 @@ sqlx migrate run
 ```
 
 ```sh
+cargo sqlx prepare --workspace -- --all-targets --all-features
+```
+
+```sh
 psql postgres://admin:password@localhost:5432/spaced
 ```
 

@@ -1,11 +1,11 @@
 [workspace]
 members = [
   "srcs/services/item_producer",
-  "srcs/services/item_consumer",
+  # "srcs/services/item_consumer",
   "srcs/services/item_service",
-  "srcs/services/web_transport",
+  "srcs/services/user_service",
   "srcs/services/web_socket",
-  "srcs/services/user",
+  "srcs/services/web_transport",
   "srcs/tauri",
   "srcs/utils",
 ]
