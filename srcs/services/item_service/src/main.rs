@@ -1,34 +1,13 @@
-use std::{net::{IpAddr, Ipv4Addr, SocketAddr}, time::{SystemTime, UNIX_EPOCH}};
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
-use argon2::{Argon2, PasswordHasher, password_hash::{rand_core::OsRng, SaltString}};
-use axum::{Router, Server, routing::{get, post}, extract::State, Json, http::StatusCode, response::{Response, IntoResponse}};
+use axum::{Router, Server, routing::post};
 use clap::Parser;
-use once_cell::sync::Lazy;
-use jsonwebtoken::{encode, Header, EncodingKey, DecodingKey};
-use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use tower_http::cors::CorsLayer;
 use tracing::info;
-use tracing_subscriber::FmtSubscriber;
+use tracing_subscriber::{EnvFilter, filter::LevelFilter};
 
-struct Keys {
-  encoding: EncodingKey,
-  decoding: DecodingKey,
-}
-
-impl Keys {
-  fn new(secret: &[u8]) -> Self {
-    Self {
-      encoding: EncodingKey::from_secret(secret),
-      decoding: DecodingKey::from_secret(secret),
-    }
-  }
-}
-
-static KEYS: Lazy<Keys> = Lazy::new(|| {
-  let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
-  Keys::new(secret.as_bytes())
-});
+mod handlers;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -38,20 +17,22 @@ struct Args {
 
   #[arg(long, default_value_t = std::net::IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)))]
   host: IpAddr,
+
+  #[arg(long, default_value_t = String::from("postgres://admin:password@localhost:5432/spaced"))]
+  database_host: String,
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+  init_logging();
+
   let args = Args::parse();
 
-  tracing::subscriber::set_global_default(FmtSubscriber::default())?;
-
-  let db_connection_str = std::env::var("DATABASE_URL")
-    .unwrap_or_else(|_| "postgres://admin:password@localhost:5432/spaced".to_string());
-  let db_connection = PgPool::connect(&db_connection_str).await?;
+  info!("Connecting to database host {}", args.database_host);
+  let db_connection = PgPool::connect(&args.database_host).await?;
 
   let app = Router::new()
-    .route("/item", post(get_nearby_items))
+    .route("/item", post(handlers::get_nearby_items))
     .with_state(db_connection)
     .layer(CorsLayer::permissive()); // Enable CORS policy
 
@@ -64,46 +45,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
   Ok(())
 }
 
-#[derive(sqlx::FromRow, Debug, Serialize)]
-struct Item {
-  id: i32,
-  x: i32,
-  y: i32,
-  w: i32,
-  h: i32,
-  name: Option<String>,
-  stylesheet: Option<String>,
-  schema: Option<String>,
-  user_id: i32,
-}
+fn init_logging() {
+  let env_filter = EnvFilter::builder()
+    .with_default_directive(LevelFilter::INFO.into())
+    .from_env_lossy();
 
-#[derive(Deserialize)]
-struct BoundingBoxPayload {
-  xmin: i32,
-  ymin: i32,
-  xmax: i32,
-  ymax: i32,
-}
-
-async fn get_nearby_items(
-  State(pool): State<PgPool>,
-  Json(payload): Json<BoundingBoxPayload>
-) -> impl IntoResponse {
-  let rows = sqlx::query_as!(
-    Item,
-    r#"
-      SELECT *
-      FROM item
-      WHERE x BETWEEN $1 AND $3
-        AND y BETWEEN $2 AND $4;
-      "#,
-    payload.xmin,
-    payload.ymin,
-    payload.xmax,
-    payload.ymax
-  )
-  .fetch_all(&pool)
-  .await.unwrap();
-
-  Json(rows)
+  tracing_subscriber::fmt()
+    .with_target(true)
+    .with_level(true)
+    .with_env_filter(env_filter)
+    .init();
 }

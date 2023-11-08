@@ -6,27 +6,25 @@ use socketioxide::SocketIo;
 use tower::ServiceBuilder;
 use tower_http::{cors::CorsLayer, services::ServeDir};
 use tracing::info;
-use tracing_subscriber::FmtSubscriber;
+use tracing_subscriber::{EnvFilter, filter::LevelFilter};
 
 mod handlers;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-  /// Name of the person to greet
   #[arg(long, default_value_t = 8080)]
   port: u16,
 
-  /// Name of the person to greet
   #[arg(long, default_value_t = std::net::IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)))]
   host: IpAddr,
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-  let args = Args::parse();
+  init_logging();
 
-  tracing::subscriber::set_global_default(FmtSubscriber::default())?;
+  let args = Args::parse();
 
   let (io_layer, io) = SocketIo::new_layer();
   io.ns("/", handlers::on_connection);
@@ -46,4 +44,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .await?;
 
   Ok(())
+}
+
+fn init_logging() {
+  let env_filter = EnvFilter::builder()
+    .with_default_directive(LevelFilter::INFO.into())
+    .from_env_lossy();
+
+  tracing_subscriber::fmt()
+    .with_target(true)
+    .with_level(true)
+    .with_env_filter(env_filter)
+    .init();
 }

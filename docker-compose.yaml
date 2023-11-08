@@ -1,5 +1,9 @@
 version: '3.8'
 
+# Available tags: latest, nonroot, debug, debug-nonroot
+# For more, see https://github.com/GoogleContainerTools/distroless#how-do-i-use-distroless-images
+x-services-image-tag: &x-services-image-tag IMAGE_TAG=${SERVICES_IMAGE_TAG:-nonroot}
+
 services:
   # A persistent database for local development.
   postgres-dev:
@@ -9,8 +13,7 @@ services:
       POSTGRES_DB: spaced
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
-    ports:
-      - '5432:5432'
+    ports: ['5432:5432']
   kafka:
     image: bitnami/kafka
     environment:
@@ -20,12 +23,10 @@ services:
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-    ports:
-      - '9092:9092'
+    ports: ['9092:9092']
   redis:
     image: redis
-    ports:
-      - '6379:6379'
+    ports: ['6379:6379']
   # envoy:
   #   image: envoyproxy/envoy:distroless-dev
   #   ports:
@@ -33,30 +34,32 @@ services:
   #   volumes:
   #     - ./envoy.yaml:/etc/envoy/envoy.yaml
   ###################################
-  ###           BUILD             ###
+  ###           OPTIONAL          ###
   ###################################
-  # item_producer:
-  #   profiles: ['sevices']
-  #   image: spaced/item_producer:latest
-  #   build:
-  #     dockerfile: srcs/services/item_producer/Dockerfile
-  # item_consumer:
-  #   profiles: ['sevices']
-  #   image: spaced/item_consumer:latest
-  #   build:
-  #     dockerfile: srcs/services/item_consumer/Dockerfile
-  item_service:
-    profiles: ['sevices']
-    image: spaced/item_service:latest
-    build:
-      dockerfile: srcs/services/item_service/Dockerfile
-  user_service:
-    profiles: ['sevices']
-    image: spaced/user_service:latest
-    build:
-      dockerfile: srcs/services/user_service/Dockerfile
   web_socket:
-    profiles: ['sevices']
-    image: spaced/web_socket:latest
+    image: spaced/web_socket:${IMAGE_TAG:-latest}
+    profiles: ['services']
     build:
       dockerfile: srcs/services/web_socket/Dockerfile
+      args: [*x-services-image-tag]
+    ports: ['8080:8080']
+  item_service:
+    image: spaced/item_service:${IMAGE_TAG:-latest}
+    profiles: ['services']
+    command:
+      ['--database-host=postgres://admin:password@postgres-dev:5432/spaced']
+    build:
+      dockerfile: srcs/services/item_service/Dockerfile
+      args: [*x-services-image-tag]
+    ports: ['8081:8081']
+    depends_on: [postgres-dev]
+  user_service:
+    image: spaced/user_service:${IMAGE_TAG:-latest}
+    profiles: ['services']
+    command:
+      ['--database-host=postgres://admin:password@postgres-dev:5432/spaced']
+    build:
+      dockerfile: srcs/services/user_service/Dockerfile
+      args: [*x-services-image-tag]
+    ports: ['8082:8082']
+    depends_on: [postgres-dev]

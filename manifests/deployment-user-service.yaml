@@ -1,22 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: api
+  name: user-service
   labels:
-    app: api
+    app: user-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: api
+      app: user-service
   template:
     metadata:
       labels:
-        app: api
+        app: user-service
     spec:
       containers:
-        - name: api
-          image: k3d-spaced:5000/api:v0.1
+        - name: user-service
+          image: k3d-spaced:5000/user-service:debug
+          # command: ["--database-host=postgres://admin:password@localhost:5432/spaced"]
           ports:
             - containerPort: 50051
           resources:

@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-socket
+  labels:
+    app: web-socket
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-socket
+  template:
+    metadata:
+      labels:
+        app: web-socket
+    spec:
+      containers:
+        - name: web-socket
+          image: k3d-spaced:5000/web-socket:debug
+          ports:
+            - containerPort: 50051
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: '1'
