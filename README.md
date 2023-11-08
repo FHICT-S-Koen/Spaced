@@ -1,6 +1,6 @@
 # Spaced
 
-### Prequisites
+### Prerequisites
 
 - [Cargo + rustc](https://www.rust-lang.org/learn/get-started)
 - [sqlx-cli](https://github.com/launchbadge/sqlx/blob/HEAD/sqlx-cli/README.md#install)
