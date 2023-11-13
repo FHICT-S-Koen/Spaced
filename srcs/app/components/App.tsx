@@ -130,7 +130,7 @@ export function App() {
           <WebSocketProvider>
             <button
               class="absolute z-50"
-              onClick={() => socket.send('Send message')}
+              onClick={() => socket.emit('Send message')}
             >
               Send message
             </button>

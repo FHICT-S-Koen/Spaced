@@ -14,6 +14,15 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
     ports: ['5432:5432']
+  rabbitmq:
+    image: bitnami/rabbitmq
+    ports:
+      - 5672:5672
+    # volumes:
+    #     - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+    #     - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+    # networks:
+    #   - rabbitmq_go_net
   kafka:
     image: bitnami/kafka
     environment:

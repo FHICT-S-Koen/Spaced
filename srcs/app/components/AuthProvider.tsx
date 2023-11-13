@@ -5,8 +5,8 @@ import { createSignal } from 'solid-js';
 import { useContext } from 'solid-js';
 import { createContext } from 'solid-js';
 
-const [isOpen, setIsOpen] = createSignal(!localStorage.getItem('access_token'));
-const [isRegistration, setIsRegistration] = createSignal(false);
+const [isOpen, setIsOpen] = createSignal(false);
+const [isRegistration, setIsRegistration] = createSignal(true);
 
 function register(event: SubmitEvent) {
   event.preventDefault();

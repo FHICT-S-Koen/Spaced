@@ -61,6 +61,30 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0942ffc6dcaadf03badf6e6a2d0228460359d5e34b57ccdc720b7382dfbd5ec5"
 
 [[package]]
+name = "amqp_serde"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "19659fab053d9b2cd4fa17649609a3241b181fcd14189931ea5c0976502fe381"
+dependencies = [
+ "bytes",
+ "serde",
+]
+
+[[package]]
+name = "amqprs"
+version = "1.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0f54bd82ec6f7a63e48856cd79f1da8657d7099decb0bbc50fe6ecb8eaedb54c"
+dependencies = [
+ "amqp_serde",
+ "async-trait",
+ "bytes",
+ "serde",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "android-tzdata"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -140,6 +164,12 @@ dependencies = [
  "cpufeatures",
  "password-hash",
 ]
+
+[[package]]
+name = "async-once-cell"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9338790e78aa95a416786ec8389546c4b6a1dfc3dc36071ed9518a9413a542eb"
 
 [[package]]
 name = "async-stream"
@@ -1043,6 +1073,30 @@ dependencies = [
  "tower",
  "tracing",
  "unicode-segmentation",
+]
+
+[[package]]
+name = "engineioxide"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "93a15e2ce780a3f9fa5d73dfed72f7792dfd61bd99b68da93fda920ba829b2f2"
+dependencies = [
+ "async-trait",
+ "base64 0.21.5",
+ "bytes",
+ "futures",
+ "http",
+ "http-body",
+ "hyper",
+ "pin-project",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tokio-tungstenite",
+ "tower",
+ "tracing",
 ]
 
 [[package]]
@@ -2091,6 +2145,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "kafka_test_multi_consumer"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "futures-util",
+ "log",
+ "prost",
+ "rdkafka",
+ "sqlx",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "kafka_test_producer"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "log",
+ "prost",
+ "rdkafka",
+ "sqlx",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "kuchiki"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3100,6 +3183,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "rabbitmq_test_consumer"
+version = "0.0.0"
+dependencies = [
+ "amqprs",
+ "anyhow",
+ "log",
+ "prost",
+ "sqlx",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "rabbitmq_test_producer"
+version = "0.0.0"
+dependencies = [
+ "amqprs",
+ "anyhow",
+ "log",
+ "prost",
+ "sqlx",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "rand"
 version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3557,18 +3668,18 @@ dependencies = [
 
 [[package]]
 name = "serde"
-version = "1.0.190"
+version = "1.0.192"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "91d3c334ca1ee894a2c6f6ad698fe8c435b76d504b13d436f0685d648d6d96f7"
+checksum = "bca2a08484b285dcb282d0f67b26cadc0df8b19f8c12502c13d966bf9482f001"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.190"
+version = "1.0.192"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "67c5609f394e5c2bd7fc51efda478004ea80ef42fee983d5c67a65e34f32c0e3"
+checksum = "d6c7207fbec9faa48073f3e3074cbe553af6ea512d7c21ba46e434e70ea9fbc1"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3817,7 +3928,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d6013c4911c8a2705c04a5415e48a39c5bcc15e05e888485954d102a2c7e9d99"
 dependencies = [
  "dashmap",
- "engineioxide",
+ "engineioxide 0.6.0",
  "futures",
  "http",
  "http-body",
@@ -3828,6 +3939,24 @@ dependencies = [
  "tokio",
  "tower",
  "tower-http",
+ "tracing",
+]
+
+[[package]]
+name = "socketioxide"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c7aeefc02b675dfff98e891ab93e1dffb847c89b67468ac49a2d684979539cb7"
+dependencies = [
+ "engineioxide 0.7.1",
+ "futures",
+ "http",
+ "http-body",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tower",
  "tracing",
 ]
 
@@ -4598,9 +4727,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokio"
-version = "1.33.0"
+version = "1.34.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f38200e3ef7995e5ef13baec2f432a6da0aa9ac495b2c0e8f3b7eec2c92d653"
+checksum = "d0c014766411e834f7af5b8f4cf46257aab4036ca95e9d2c144a10f59ad6f5b9"
 dependencies = [
  "backtrace",
  "bytes",
@@ -4627,9 +4756,9 @@ dependencies = [
 
 [[package]]
 name = "tokio-macros"
-version = "2.1.0"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "630bdcf245f78637c13ec01ffae6187cca34625e8c63150d424b59e55af2675e"
+checksum = "5b8a1e28f2deaa14e508979454cb3a223b10b938b45af148bc0986de36f1923b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -5212,7 +5341,29 @@ dependencies = [
  "prost",
  "redis",
  "serde_json",
- "socketioxide",
+ "socketioxide 0.6.0",
+ "tokio",
+ "tower",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "web_socket_copy"
+version = "0.0.0"
+dependencies = [
+ "amqprs",
+ "anyhow",
+ "async-once-cell",
+ "axum",
+ "clap",
+ "futures",
+ "futures-util",
+ "once_cell",
+ "prost",
+ "serde_json",
+ "socketioxide 0.7.1",
  "tokio",
  "tower",
  "tower-http",

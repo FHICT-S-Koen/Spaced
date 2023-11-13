@@ -3,8 +3,13 @@ members = [
   "srcs/services/item_producer",
   # "srcs/services/item_consumer",
   "srcs/services/item_service",
+  "srcs/services/rabbitmq_test_consumer",
+  "srcs/services/rabbitmq_test_producer",
+  "srcs/services/kafka_test_multi_consumer",
+  "srcs/services/kafka_test_producer",
   "srcs/services/user_service",
   "srcs/services/web_socket",
+  "srcs/services/web_socket_copy",
   "srcs/services/web_transport",
   "srcs/tauri",
   "srcs/utils",
@@ -18,6 +23,7 @@ edition = "2021"
 rust-version = "1.70"
 
 [workspace.dependencies]
+amqprs = "1"
 anyhow = "1"
 axum = { version = "0.6" }
 axum-extra = { version = "0.8" }

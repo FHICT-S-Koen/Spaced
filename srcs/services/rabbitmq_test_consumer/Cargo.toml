@@ -1,0 +1,21 @@
+[package]
+name = "rabbitmq_test_consumer"
+version.workspace = true
+description = "The main producer service used to manage items in real-time."
+repository.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "rabbitmq_test_consumer"
+path = "src/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+log.workspace = true
+amqprs = { workspace = true, features = ["traces"] }
+prost.workspace = true
+sqlx.workspace = true
+tokio.workspace = true
