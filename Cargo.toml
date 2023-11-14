@@ -12,6 +12,7 @@ members = [
   "srcs/services/web_socket_copy",
   "srcs/services/web_transport",
   "srcs/tauri",
+  "srcs/services/test",
   "srcs/utils",
 ]
 resolver = "2"

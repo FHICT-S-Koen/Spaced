@@ -8,6 +8,7 @@ use tower_http::{cors::CorsLayer, services::ServeDir};
 use tracing::info;
 use tracing_subscriber::{EnvFilter, filter::LevelFilter};
 
+mod consumer;
 mod handlers;
 
 #[derive(Parser, Debug)]
@@ -28,6 +29,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
   let (io_layer, io) = SocketIo::new_layer();
   io.ns("/", handlers::on_connection);
+  tokio::spawn(consumer::background_task(io));
 
   let app = Router::new()
     .nest_service("/", ServeDir::new("dist"))

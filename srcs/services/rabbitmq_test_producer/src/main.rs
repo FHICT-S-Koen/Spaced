@@ -27,17 +27,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .await
     .unwrap();
 
-  let channel1 = connection.open_channel(None).await.unwrap();
-  // channel1
-  //   .register_callback(DefaultChannelCallback)
-  //   .await
-  //   .unwrap();
-  let channel2 = connection.open_channel(None).await.unwrap();
-  // channel2
-  //   .register_callback(DefaultChannelCallback)
-  //   .await
-  //   .unwrap();
-
+  let channel = connection.open_channel(None).await.unwrap();
   let content = String::from(
     r#"
       {
@@ -53,11 +43,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
   let args = BasicPublishArguments::new(exchange_name, routing_key);
 
   loop {
-    channel1
-      .basic_publish(BasicProperties::default(), content.clone(), args.clone())
-      .await
-      .unwrap();
-    channel2
+    channel
       .basic_publish(BasicProperties::default(), content.clone(), args.clone())
       .await
       .unwrap();

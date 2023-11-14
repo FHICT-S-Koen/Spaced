@@ -1,11 +1,15 @@
 #[macro_use]
 extern crate log;
 
+use std::thread::sleep;
+use std::time::Duration;
+
 use amqprs::callbacks::{DefaultChannelCallback, DefaultConnectionCallback};
-use amqprs::channel::{BasicConsumeArguments, BasicPublishArguments, QueueDeclareArguments, QueueBindArguments};
+use amqprs::channel::{
+  BasicConsumeArguments, BasicPublishArguments, QueueBindArguments, QueueDeclareArguments,
+};
 use amqprs::connection::{Connection, OpenConnectionArguments};
 use amqprs::consumer::DefaultConsumer;
-use amqprs::BasicProperties;
 use tokio::sync::Notify;
 use tracing_subscriber::filter::LevelFilter;
 use tracing_subscriber::EnvFilter;
@@ -23,11 +27,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
   ))
   .await
   .unwrap();
-
   connection
     .register_callback(DefaultConnectionCallback)
     .await
     .unwrap();
+
   let channel = connection.open_channel(None).await.unwrap();
   channel
     .register_callback(DefaultChannelCallback)
@@ -52,16 +56,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .await
     .unwrap();
 
-
   let args = BasicConsumeArguments::new(&queue_name, "example_basic_pub_sub");
 
-  channel
-    .basic_consume(DefaultConsumer::new(args.no_ack), args)
-    .await
-    .unwrap();
-
+  tokio::spawn(async move {
+    channel
+      .basic_consume(DefaultConsumer::new(args.no_ack), args)
+      .await
+      .unwrap();
     let guard = Notify::new();
     guard.notified().await;
+  });
+  sleep(Duration::from_secs(10));
+  // let guard = Notify::new();
+  // guard.notified().await;
+  // guard.notified().await;
   Ok(())
 }
 

@@ -3948,6 +3948,7 @@ version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c7aeefc02b675dfff98e891ab93e1dffb847c89b67468ac49a2d684979539cb7"
 dependencies = [
+ "dashmap",
  "engineioxide 0.7.1",
  "futures",
  "http",
@@ -4643,6 +4644,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6093bad37da69aab9d123a8091e4be0aa4a03e4d601ec641c327398315f62b64"
 dependencies = [
  "winapi-util",
+]
+
+[[package]]
+name = "test"
+version = "0.0.0"
+dependencies = [
+ "amqprs",
+ "anyhow",
+ "log",
+ "prost",
+ "sqlx",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -5356,6 +5371,7 @@ dependencies = [
  "amqprs",
  "anyhow",
  "async-once-cell",
+ "async-trait",
  "axum",
  "clap",
  "futures",
