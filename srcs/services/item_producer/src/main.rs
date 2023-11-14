@@ -1,117 +1,64 @@
-#[macro_use]
-extern crate log;
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
-use std::time::Duration;
+use axum::{Router, Server};
+use clap::Parser;
+use socketioxide::SocketIo;
+use tower::ServiceBuilder;
+use tower_http::{cors::CorsLayer, services::ServeDir};
+use tracing::info;
+use tracing_subscriber::{EnvFilter, filter::LevelFilter};
+use anyhow::{Context, Result};
 
-use rdkafka::Message;
-use rdkafka::config::{ClientConfig, RDKafkaLogLevel};
-use rdkafka::consumer::{Consumer, BaseConsumer};
-use rdkafka::message::{Header, OwnedHeaders};
-use rdkafka::producer::{FutureProducer, FutureRecord};
+mod consumer;
+mod handlers;
 
-use tonic::{transport::Server, Request, Response, Status};
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+  #[arg(long, default_value_t = 8080)]
+  port: u16,
 
-use item::item_server::{Item, ItemServer};
-use item::ItemListResponse;
-use utils::BoundingBox;
-
-#[allow(unused_imports)] // Used to encode protobufs
-use prost::Message as ProtoMessage;
-
-pub mod item {
-  tonic::include_proto!("item");
-}
-pub mod utils {
-  tonic::include_proto!("utils");
-}
-
-pub struct ItemMessanger {
-  producer: FutureProducer,
-  consumer: BaseConsumer,
-}
-
-#[tonic::async_trait]
-impl Item for ItemMessanger {
-  async fn nearby_items(
-    &self,
-    request: Request<BoundingBox>,
-  ) -> Result<Response<ItemListResponse>, Status> {
-    info!("Got a request from {:?}", request.remote_addr());
-
-    let request = async move {
-      let bounding = request.into_inner().encode_to_vec();
-      let delivery_status = self.producer
-        .send(
-          FutureRecord::to("item")
-            .key(&"bounding".to_string())
-            .payload(bounding.as_slice())
-            .headers(OwnedHeaders::new().insert(Header {
-              key: "header_key",
-              value: Some("header_value"),
-            })),
-          Duration::from_secs(0),
-        )
-        .await;
-      info!("Delivery status for message {} received", "test");
-      delivery_status
-    };
-
-    info!("Future completed. Result: {:?}", request.await);
-    let response = async move {
-      let value: ItemListResponse;
-      loop {
-        let message = self.consumer.poll(Duration::from_secs(1));
-        match message {
-          Some(response) => {
-            value = ItemListResponse::decode(response.unwrap().payload().unwrap()).unwrap();
-            break
-          }
-          None => continue,
-        }
-      }
-      value
-    };
-    // info!("Future completed. Result: {:?}", response.await);
-
-    Ok(Response::new(response.await))
-  }
+  #[arg(long, default_value_t = std::net::IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)))]
+  host: IpAddr,
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-  env_logger::init();
-  let addr = "127.0.0.1:50051".parse().unwrap();
+async fn main() -> Result<()> {
+  init_logging();
 
-  let producer: FutureProducer = ClientConfig::new()
-    .set("bootstrap.servers", "localhost:9092")
-    .set("message.timeout.ms", "5000")
-    .create()
-    .expect("Producer creation error");
+  let args = Args::parse();
 
-  let consumer: BaseConsumer = ClientConfig::new()
-    .set("group.id", "example_producer_group_id")
-    .set("bootstrap.servers", "localhost:9092")
-    .set("enable.partition.eof", "false")
-    .set("session.timeout.ms", "6000")
-    .set("enable.auto.commit", "true")
-    .set_log_level(RDKafkaLogLevel::Debug)
-    .create()
-    .expect("Consumer creation failed");
+  info!("{}", std::env::var("OUT_DIR").unwrap());
 
-  consumer
-    .subscribe(&vec!["processed_item"])
-    .expect("Can't subscribe to specified topics");
+  let (io_layer, io) = SocketIo::new_layer();
+  io.ns("/", handlers::on_connection);
+  tokio::spawn(consumer::background_task(io));
 
-  let messanger = ItemMessanger {
-    producer,
-    consumer
-  };
-  info!("Item producer service listening on {}", addr);
+  let app = Router::new()
+    .nest_service("/", ServeDir::new("dist"))
+    .layer(
+      ServiceBuilder::new()
+        .layer(CorsLayer::permissive()) // Enable CORS policy
+        .layer(io_layer),
+    );
 
-  Server::builder()
-    .add_service(ItemServer::new(messanger))
-    .serve(addr)
+  let addr = &SocketAddr::new(args.host, args.port);
+  info!("Server starting on {}://{}", "http", addr);
+  Server::bind(addr)
+    .serve(app.into_make_service())
     .await?;
 
   Ok(())
+}
+
+fn init_logging() {
+  let env_filter = EnvFilter::builder()
+    .with_default_directive(LevelFilter::INFO.into())
+    .from_env_lossy();
+
+  tracing_subscriber::fmt()
+    .with_target(true)
+    .with_level(true)
+    .with_env_filter(env_filter)
+    .init();
 }

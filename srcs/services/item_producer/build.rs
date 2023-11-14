@@ -1,5 +1,9 @@
+extern crate prost_build;
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-  tonic_build::compile_protos("../../proto/utils.proto")?;
-  tonic_build::compile_protos("../../proto/item.proto")?;
+  prost_build::compile_protos(
+    &["../../proto/item.proto", "../../proto/utils.proto"],
+    &["../../proto"],
+  )?;
   Ok(())
 }

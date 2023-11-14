@@ -6,6 +6,5 @@ CREATE TABLE item
   w INTEGER NOT NULL,
   h INTEGER NOT NULL,
   name VARCHAR(100),
-  stylesheet TEXT,
   schema TEXT
 );

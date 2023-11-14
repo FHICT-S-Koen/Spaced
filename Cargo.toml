@@ -5,14 +5,9 @@ members = [
   "srcs/services/item_service",
   "srcs/services/rabbitmq_test_consumer",
   "srcs/services/rabbitmq_test_producer",
-  "srcs/services/kafka_test_multi_consumer",
   "srcs/services/kafka_test_producer",
   "srcs/services/user_service",
-  "srcs/services/web_socket",
-  "srcs/services/web_socket_copy",
-  "srcs/services/web_transport",
   "srcs/tauri",
-  "srcs/services/test",
   "srcs/utils",
 ]
 resolver = "2"

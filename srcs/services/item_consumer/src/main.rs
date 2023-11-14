@@ -3,7 +3,6 @@ extern crate log;
 
 use std::time::Duration;
 
-use item::ItemResponse;
 use rdkafka::client::ClientContext;
 use rdkafka::config::{ClientConfig, RDKafkaLogLevel};
 use rdkafka::consumer::stream_consumer::StreamConsumer;

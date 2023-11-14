@@ -8,13 +8,10 @@ WORKDIR /app
 COPY srcs srcs
 COPY Cargo.toml Cargo.lock ./
 
-RUN apt-get update && apt-get install -y protobuf-compiler libprotobuf-dev
-RUN cargo build -p item_producer --release
+RUN cargo build -p web_socket --release
 
 # TODO: use static and copy dynamically linked libraries or build with static linking
 FROM gcr.io/distroless/cc:$IMAGE_TAG
 WORKDIR /home/nonroot
-# libz.so.1 is required for rdkafka
-COPY --from=build /lib/x86_64-linux-gnu/libz.so.1 /lib/x86_64-linux-gnu/libz.so.1
-COPY --from=build --chown=nonroot:nonroot /app/target/release/item_producer /usr/bin
-ENTRYPOINT ["item_producer"]
+COPY --from=build --chown=nonroot:nonroot /app/target/release/web_socket /usr/bin
+ENTRYPOINT ["web_socket"]

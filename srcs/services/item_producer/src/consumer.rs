@@ -5,6 +5,7 @@ use amqprs::{
   consumer::AsyncConsumer,
   BasicProperties, Deliver,
 };
+use anyhow::{Result, Ok};
 use async_trait::async_trait;
 use socketioxide::SocketIo;
 use tokio::sync::Notify;
@@ -24,16 +25,17 @@ impl ItemConsumer {
 impl AsyncConsumer for ItemConsumer {
   async fn consume(
     &mut self,
-    _channel: &Channel,
+    channel: &Channel,
     _deliver: Deliver,
     _basic_properties: BasicProperties,
     _content: Vec<u8>,
   ) {
+    info!("Consuming incoming message on channel: {}", channel.channel_id());
     self.socket.emit("/", _content).unwrap();
   }
 }
 
-pub async fn background_task(io: SocketIo) {
+pub async fn background_task(io: SocketIo) -> Result<()> {
   info!("Connect AMQP consumer");
   let connection = Connection::open(&OpenConnectionArguments::new(
     "localhost",
@@ -41,48 +43,43 @@ pub async fn background_task(io: SocketIo) {
     "user",
     "bitnami",
   ))
-  .await
-  .unwrap();
+  .await?;
   connection
     .register_callback(DefaultConnectionCallback)
-    .await
-    .unwrap();
+    .await?;
 
-  let channel = connection.open_channel(None).await.unwrap();
+  let channel = connection.open_channel(None).await?;
   channel
     .register_callback(DefaultChannelCallback)
-    .await
-    .unwrap();
+    .await?;
 
   let (queue_name, _, _) = channel
     .queue_declare(QueueDeclareArguments::durable_client_named(
       "amqprs.examples.basic",
     ))
-    .await
-    .unwrap()
-    .unwrap();
+    .await?.unwrap();
 
-  let routing_key = "amqprs.example";
   let exchange_name = "amq.topic";
+  let routing_key = "amqprs.example";
   channel
     .queue_bind(QueueBindArguments::new(
       &queue_name,
       exchange_name,
       routing_key,
     ))
-    .await
-    .unwrap();
+    .await?;
 
   let args = BasicConsumeArguments::new(&queue_name, "example_basic_pub_sub");
 
   tokio::spawn(async move {
     channel
       .basic_consume(ItemConsumer::new(io), args)
-      .await
-      .unwrap();
+      .await?;
     let guard = Notify::new();
     guard.notified().await;
+    Ok(())
   });
   let guard = Notify::new();
   guard.notified().await;
+  Ok(())
 }

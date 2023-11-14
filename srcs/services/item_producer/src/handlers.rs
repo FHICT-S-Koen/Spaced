@@ -7,6 +7,16 @@ use amqprs::{
 use socketioxide::extract::{Data, SocketRef};
 use tracing::info;
 
+// pub mod item {
+//   include!(concat!(env!("OUT_DIR"), "/item.rs"));
+// }
+
+// use item::ItemResponse;
+// #[allow(unused_imports)] // Used to encode protobufs
+// use prost::Message as ProtoMessage;
+
+// use crate::item::ItemListResponse;
+
 pub async fn on_connection(socket: SocketRef) {
   info!("Connect AMQP producer");
   let connection = Connection::open(&OpenConnectionArguments::new(
@@ -33,12 +43,11 @@ pub async fn on_connection(socket: SocketRef) {
         .await
         .unwrap();
 
-      info!("Received event: {:?}", data);
-
-      let routing_key = "amqprs.example";
       let exchange_name = "amq.topic";
+      let routing_key = "item.";
       let args = BasicPublishArguments::new(exchange_name, routing_key);
-      channel
+      // broadcast_item_updates(data)
+        channel
         .basic_publish(BasicProperties::default(), data.into_bytes(), args)
         .await
         .unwrap();
@@ -49,3 +58,10 @@ pub async fn on_connection(socket: SocketRef) {
     info!("Socket.IO disconnected: {} {}", socket.id, reason);
   });
 }
+
+// async fn broadcast_item_updates(item, ) {
+//   channel
+//     .basic_publish(BasicProperties::default(), data.into_bytes(), args)
+//     .await
+//     .unwrap();
+// }

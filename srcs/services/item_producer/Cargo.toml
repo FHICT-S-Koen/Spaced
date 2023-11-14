@@ -1,7 +1,7 @@
 [package]
 name = "item_producer"
 version.workspace = true
-description = "The main producer service used to manage items in real-time."
+description = "The main manage items in real-time."
 repository.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -11,13 +11,25 @@ name = "item_producer"
 path = "src/main.rs"
 
 [build-dependencies]
-tonic-build.workspace = true
+prost-build.workspace = true
 
 [dependencies]
 anyhow.workspace = true
-env_logger.workspace = true
-log.workspace = true
 prost.workspace = true
-rdkafka.workspace = true
 tokio.workspace = true
-tonic.workspace = true
+once_cell.workspace = true
+async-once-cell = "0.5.3"
+tracing.workspace = true
+tracing-subscriber.workspace = true
+# amqprs = { workspace = true, features = ["traces"] }
+amqprs.workspace = true
+futures.workspace = true
+futures-util.workspace = true
+axum.workspace = true
+tower.workspace = true
+tower-http.workspace = true
+# socketioxide = { version = "0.7", features = ["tracing", "extensions"] }
+socketioxide = { version = "0.7", features = ["extensions"] }
+serde_json.workspace = true
+clap.workspace = true
+async-trait = "0.1"
