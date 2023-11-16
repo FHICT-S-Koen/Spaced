@@ -1900,30 +1900,9 @@ dependencies = [
  "once_cell",
  "prost",
  "prost-build",
- "serde_json",
- "socketioxide",
- "tokio",
- "tower",
- "tower-http",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "item_service"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "argon2",
- "axum",
- "axum-extra",
- "clap",
- "futures",
- "futures-util",
- "jsonwebtoken",
- "once_cell",
  "serde",
  "serde_json",
+ "socketioxide",
  "sqlx",
  "tokio",
  "tower",

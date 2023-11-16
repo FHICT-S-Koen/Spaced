@@ -8,11 +8,13 @@ use anyhow::Result;
 use axum::{Router, Server};
 use clap::Parser;
 use socketioxide::{extract::SocketRef, SocketIo};
+use sqlx::PgPool;
 use tower::ServiceBuilder;
 use tower_http::{cors::CorsLayer, services::ServeDir};
 use tracing::info;
 use tracing_subscriber::{filter::LevelFilter, EnvFilter};
 
+mod clients;
 mod consumer;
 mod handlers;
 
@@ -32,6 +34,9 @@ struct Args {
   amqp_username: String,
   #[arg(long, default_value_t = String::from("bitnami"))]
   amqp_password: String,
+
+  #[arg(long, default_value_t = String::from("postgres://admin:password@localhost:5432/spaced"))]
+  database_host: String,
 }
 
 #[tokio::main]
@@ -39,6 +44,8 @@ async fn main() -> Result<()> {
   init_logging();
 
   let args = Args::parse();
+
+  let db_connection = PgPool::connect(&args.database_host).await?;
   let connection = Connection::open(&OpenConnectionArguments::new(
     args.amqp_host.as_str(),
     args.amqp_port,
@@ -53,11 +60,20 @@ async fn main() -> Result<()> {
   let (io_layer, io) = SocketIo::new_layer();
   tokio::spawn(consumer::background_task(io.clone(), channel.clone()));
   io.ns("/", |socket: SocketRef| {
+    let mut users = clients::get_users().write().unwrap();
+    users.insert(socket.id.to_string(), 1);
+
+    socket.extensions.insert(db_connection);
     socket.extensions.insert(channel);
     // Setup handlers
-    socket.on("message", handlers::update);
+    socket.on("item:create", handlers::create);
+    socket.on("item:get_nearby", handlers::get_nearby);
+    socket.on("item:update_outer", handlers::update_outer);
+    socket.on("item:update_inner", handlers::update_inner);
     socket.on_disconnect(|socket, reason| async move {
       info!("Socket.IO disconnected: {} {}", socket.id, reason);
+      let mut users = clients::get_users().write().unwrap();
+      users.remove(&socket.id.to_string());
     });
   });
 

@@ -44,7 +44,7 @@ pub async fn background_task(socket: SocketIo, channel: Arc<Channel>) -> Result<
     .unwrap();
 
   let exchange_name = "amq.topic";
-  let routing_key = "amqprs.example";
+  let routing_key = "item.update";
   channel
     .queue_bind(QueueBindArguments::new(
       &queue_name,

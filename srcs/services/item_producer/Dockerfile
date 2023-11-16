@@ -6,6 +6,7 @@ ARG IMAGE_TAG=nonroot
 FROM rust:1.70.0 as build
 WORKDIR /app
 COPY srcs srcs
+COPY .sqlx .sqlx
 COPY Cargo.toml Cargo.lock ./
 
 RUN cargo build -p item_producer --release

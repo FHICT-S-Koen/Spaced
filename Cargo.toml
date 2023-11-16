@@ -2,7 +2,6 @@
 members = [
   "srcs/services/item_producer",
   # "srcs/services/item_consumer",
-  "srcs/services/item_service",
   "srcs/services/rabbitmq_test_consumer",
   "srcs/services/rabbitmq_test_producer",
   "srcs/services/kafka_test_producer",

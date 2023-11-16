@@ -1,7 +1,7 @@
-import { invoke } from '@tauri-apps/api/tauri';
+// import { invoke } from '@tauri-apps/api/tauri';
 import { createMemo, type Setter } from 'solid-js';
 
-import { useContextmenu } from './ContextmenuProvider.js';
+// import { useContextmenu } from './ContextmenuProvider.js';
 import { useSelection } from './SelectionProvider.js';
 import { useViewport } from './ViewportProvider.js';
 import type { Item } from '../lib/types.js';
@@ -9,13 +9,13 @@ import { absoluteToRelative, Vec2D } from '../lib/vector.js';
 
 type ContainerProps = {
   index: number;
-  mutate: Setter<Item[] | undefined>;
+  setItems: Setter<Item[]>;
 } & Item;
 
 export function Container(properties: ContainerProps) {
   const { absoluteViewportPosition, scalar } = useViewport();
-  const { selectedMenuItem, setAbsoluteMenuPosition, setCallback, setIsOpen } =
-    useContextmenu();
+  // const { selectedMenuItem, setAbsoluteMenuPosition, setCallback, setIsOpen } =
+  //   useContextmenu();
   const { getSelected, holdingCtrl, holdingShift, register, unregister } =
     useSelection();
   const selected = createMemo(() => getSelected().has(properties.id!));
@@ -26,28 +26,28 @@ export function Container(properties: ContainerProps) {
       scalar(),
     ),
   );
-  function handleContextmenu(event: MouseEvent) {
-    event.preventDefault();
-    setAbsoluteMenuPosition(translation());
-    setIsOpen((prev) => !prev);
-    setCallback(() => {
-      invoke('update', {
-        ...properties,
-        color: selectedMenuItem(),
-        data: ref.textContent,
-      }).then(() => {
-        properties.mutate((prev) => {
-          const items = [...prev!];
-          items[properties.index] = {
-            ...items[properties.index],
-            color: selectedMenuItem() as string | undefined,
-            data: ref.textContent!,
-          };
-          return items;
-        });
-      });
-    });
-  }
+  // function handleContextmenu(event: MouseEvent) {
+  //   event.preventDefault();
+  //   setAbsoluteMenuPosition(translation());
+  //   setIsOpen((prev) => !prev);
+  //   setCallback(() => {
+  //     invoke('update', {
+  //       ...properties,
+  //       color: selectedMenuItem(),
+  //       data: ref.textContent,
+  //     }).then(() => {
+  //       properties.mutate((prev) => {
+  //         const items = [...prev!];
+  //         items[properties.index] = {
+  //           ...items[properties.index],
+  //           color: selectedMenuItem() as string | undefined,
+  //           data: ref.textContent!,
+  //         };
+  //         return items;
+  //       });
+  //     });
+  //   });
+  // }
   let ref!: HTMLDivElement;
   function handleClick() {
     register(properties.id!);
@@ -58,27 +58,27 @@ export function Container(properties: ContainerProps) {
     }
     unregister(properties.id!);
   }
-  function handleKeyUp(event: KeyboardEvent) {
-    if (event.shiftKey && event.key === 'Delete') {
-      invoke('delete', { id: properties.id }).then(() => {
-        properties.mutate((prev) => {
-          // TODO: needs to be copied?
-          const items = [...prev!];
-          items?.splice(properties.index, 1);
-          return items;
-        });
-      });
-    } else if (event.key === 'Escape') {
-      ref.blur();
-    }
-    invoke('update', {
-      ...properties,
-      // TODO: create class with normalize method for items...
-      x: Math.floor(properties.x),
-      y: Math.floor(properties.y),
-      data: ref.textContent,
-    });
-  }
+  // function handleKeyUp(event: KeyboardEvent) {
+  //   if (event.shiftKey && event.key === 'Delete') {
+  //     invoke('delete', { id: properties.id }).then(() => {
+  //       properties.mutate((prev) => {
+  //         // TODO: needs to be copied?
+  //         const items = [...prev!];
+  //         items?.splice(properties.index, 1);
+  //         return items;
+  //       });
+  //     });
+  //   } else if (event.key === 'Escape') {
+  //     ref.blur();
+  //   }
+  //   invoke('update', {
+  //     ...properties,
+  //     // TODO: create class with normalize method for items...
+  //     x: Math.floor(properties.x),
+  //     y: Math.floor(properties.y),
+  //     data: ref.textContent,
+  //   });
+  // }
   // eslint-disable-next-line unicorn/consistent-function-scoping
   function handleBeforeInput(event: InputEvent) {
     if (event.inputType === 'insertParagraph') {
@@ -100,10 +100,10 @@ export function Container(properties: ContainerProps) {
     <div
       ref={ref}
       onBeforeInput={handleBeforeInput}
-      onKeyUp={handleKeyUp}
+      // onKeyUp={handleKeyUp}
       onClick={handleClick}
       onBlur={handleBlur}
-      onContextMenu={handleContextmenu}
+      // onContextMenu={handleContextmenu}
       class="absolute min-h-[30px] min-w-[30px] whitespace-pre p-1 outline outline-1"
       tabIndex="0"
       contenteditable={selected()}

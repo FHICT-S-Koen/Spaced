@@ -6,5 +6,5 @@ CREATE TABLE "user"
   password BYTEA NOT NULL
 );
 
-ALTER TABLE item
-ADD user_id INTEGER NOT NULL REFERENCES "user"(id);
+-- ALTER TABLE item
+-- ADD user_id INTEGER NOT NULL REFERENCES "user"(id);
