@@ -7,7 +7,7 @@ use tower::ServiceBuilder;
 use tower_http::{cors::CorsLayer, services::ServeDir};
 use tracing::info;
 use tracing_subscriber::{EnvFilter, filter::LevelFilter};
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 mod consumer;
 mod handlers;
@@ -27,8 +27,6 @@ async fn main() -> Result<()> {
   init_logging();
 
   let args = Args::parse();
-
-  info!("{}", std::env::var("OUT_DIR").unwrap());
 
   let (io_layer, io) = SocketIo::new_layer();
   io.ns("/", handlers::on_connection);

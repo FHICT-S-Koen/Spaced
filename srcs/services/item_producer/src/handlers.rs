@@ -44,7 +44,7 @@ pub async fn on_connection(socket: SocketRef) {
         .unwrap();
 
       let exchange_name = "amq.topic";
-      let routing_key = "item.";
+      let routing_key = "amqprs.example";
       let args = BasicPublishArguments::new(exchange_name, routing_key);
       // broadcast_item_updates(data)
         channel

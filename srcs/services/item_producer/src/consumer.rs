@@ -5,7 +5,7 @@ use amqprs::{
   consumer::AsyncConsumer,
   BasicProperties, Deliver,
 };
-use anyhow::{Result, Ok};
+use anyhow::{Ok, Result};
 use async_trait::async_trait;
 use socketioxide::SocketIo;
 use tokio::sync::Notify;
@@ -30,7 +30,10 @@ impl AsyncConsumer for ItemConsumer {
     _basic_properties: BasicProperties,
     _content: Vec<u8>,
   ) {
-    info!("Consuming incoming message on channel: {}", channel.channel_id());
+    info!(
+      "Consuming incoming message on channel: {}",
+      channel.channel_id()
+    );
     self.socket.emit("/", _content).unwrap();
   }
 }
@@ -49,15 +52,12 @@ pub async fn background_task(io: SocketIo) -> Result<()> {
     .await?;
 
   let channel = connection.open_channel(None).await?;
-  channel
-    .register_callback(DefaultChannelCallback)
-    .await?;
+  channel.register_callback(DefaultChannelCallback).await?;
 
   let (queue_name, _, _) = channel
-    .queue_declare(QueueDeclareArguments::durable_client_named(
-      "amqprs.examples.basic",
-    ))
-    .await?.unwrap();
+    .queue_declare(QueueDeclareArguments::default())
+    .await?
+    .unwrap();
 
   let exchange_name = "amq.topic";
   let routing_key = "amqprs.example";
@@ -74,10 +74,10 @@ pub async fn background_task(io: SocketIo) -> Result<()> {
   tokio::spawn(async move {
     channel
       .basic_consume(ItemConsumer::new(io), args)
-      .await?;
+      .await
+      .unwrap();
     let guard = Notify::new();
     guard.notified().await;
-    Ok(())
   });
   let guard = Notify::new();
   guard.notified().await;

@@ -8,10 +8,10 @@ WORKDIR /app
 COPY srcs srcs
 COPY Cargo.toml Cargo.lock ./
 
-RUN cargo build -p web_socket --release
+RUN cargo build -p item_producer --release
 
 # TODO: use static and copy dynamically linked libraries or build with static linking
 FROM gcr.io/distroless/cc:$IMAGE_TAG
 WORKDIR /home/nonroot
-COPY --from=build --chown=nonroot:nonroot /app/target/release/web_socket /usr/bin
-ENTRYPOINT ["web_socket"]
+COPY --from=build --chown=nonroot:nonroot /app/target/release/item_producer /usr/bin
+ENTRYPOINT ["item_producer"]

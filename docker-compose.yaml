@@ -19,38 +19,14 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
-    # volumes:
-    #     - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
-    #     - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
-    # networks:
-    #   - rabbitmq_go_net
-  kafka:
-    image: bitnami/kafka
-    environment:
-      - KAFKA_CFG_NODE_ID=0
-      - KAFKA_CFG_PROCESS_ROLES=controller,broker
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
-      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-    ports: ['9092:9092']
-  redis:
-    image: redis
-    ports: ['6379:6379']
-  # envoy:
-  #   image: envoyproxy/envoy:distroless-dev
-  #   ports:
-  #     - '10000:10000'
-  #   volumes:
-  #     - ./envoy.yaml:/etc/envoy/envoy.yaml
   ###################################
   ###           OPTIONAL          ###
   ###################################
-  web_socket:
-    image: spaced/web_socket:${IMAGE_TAG:-latest}
+  item_producer:
+    image: spaced/item_producer:${IMAGE_TAG:-latest}
     profiles: ['services']
     build:
-      dockerfile: srcs/services/web_socket/Dockerfile
+      dockerfile: srcs/services/item_producer/Dockerfile
       args: [*x-services-image-tag]
     ports: ['8080:8080']
   item_service:
