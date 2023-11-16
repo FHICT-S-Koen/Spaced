@@ -1,10 +1,10 @@
+use std::sync::Arc;
+
 use amqprs::{
-  callbacks::{DefaultChannelCallback, DefaultConnectionCallback},
-  channel::BasicPublishArguments,
-  connection::{Connection, OpenConnectionArguments},
+  callbacks::DefaultChannelCallback, channel::BasicPublishArguments, connection::Connection,
   BasicProperties,
 };
-use socketioxide::extract::{Data, SocketRef};
+use socketioxide::extract::{AckSender, Data, SocketRef};
 use tracing::info;
 
 // pub mod item {
@@ -17,45 +17,23 @@ use tracing::info;
 
 // use crate::item::ItemListResponse;
 
-pub async fn on_connection(socket: SocketRef) {
-  info!("Connect AMQP producer");
-  let connection = Connection::open(&OpenConnectionArguments::new(
-    "localhost",
-    5672,
-    "user",
-    "bitnami",
-  ))
-  .await
-  .unwrap();
-  connection
-    .register_callback(DefaultConnectionCallback)
-    .await
-    .unwrap();
-
-  info!("Register handlers");
-
-  socket.on("message", move |_s: SocketRef, Data::<String>(data)| {
-    info!("Received event: {:?}", data);
-    tokio::spawn(async move {
-      let channel = connection.open_channel(None).await.unwrap();
-      channel
-        .register_callback(DefaultChannelCallback)
-        .await
-        .unwrap();
-
-      let exchange_name = "amq.topic";
-      let routing_key = "amqprs.example";
-      let args = BasicPublishArguments::new(exchange_name, routing_key);
-      // broadcast_item_updates(data)
-        channel
-        .basic_publish(BasicProperties::default(), data.into_bytes(), args)
-        .await
-        .unwrap();
-    });
-  });
-
-  socket.on_disconnect(|socket, reason| async move {
-    info!("Socket.IO disconnected: {} {}", socket.id, reason);
+pub fn update(socket: SocketRef, Data(data): Data<String>, _ack: AckSender) {
+  info!("Received event: {:?}", data);
+  let connection = socket.extensions.get::<Arc<Connection>>().unwrap().clone();
+  tokio::spawn(async move {
+    let channel = connection.open_channel(None).await.unwrap();
+    channel
+      .register_callback(DefaultChannelCallback)
+      .await
+      .unwrap();
+    let exchange_name = "amq.topic";
+    let routing_key = "amqprs.example";
+    let args = BasicPublishArguments::new(exchange_name, routing_key);
+    // broadcast_item_updates(data)
+    channel
+      .basic_publish(BasicProperties::default(), data.into_bytes(), args)
+      .await
+      .unwrap();
   });
 }
 

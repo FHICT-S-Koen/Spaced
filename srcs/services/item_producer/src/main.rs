@@ -1,13 +1,17 @@
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::{net::{IpAddr, Ipv4Addr, SocketAddr}, sync::Arc};
 
+use amqprs::{
+  callbacks::DefaultConnectionCallback,
+  connection::{Connection, OpenConnectionArguments},
+};
+use anyhow::Result;
 use axum::{Router, Server};
 use clap::Parser;
-use socketioxide::SocketIo;
+use socketioxide::{extract::SocketRef, SocketIo};
 use tower::ServiceBuilder;
 use tower_http::{cors::CorsLayer, services::ServeDir};
 use tracing::info;
-use tracing_subscriber::{EnvFilter, filter::LevelFilter};
-use anyhow::Result;
+use tracing_subscriber::{filter::LevelFilter, EnvFilter};
 
 mod consumer;
 mod handlers;
@@ -28,9 +32,28 @@ async fn main() -> Result<()> {
 
   let args = Args::parse();
 
+  let connection = Arc::new(Connection::open(&OpenConnectionArguments::new(
+    "localhost",
+    5672,
+    "user",
+    "bitnami",
+  ))
+  .await?);
+  connection
+    .register_callback(DefaultConnectionCallback)
+    .await?;
+
   let (io_layer, io) = SocketIo::new_layer();
-  io.ns("/", handlers::on_connection);
-  tokio::spawn(consumer::background_task(io));
+  tokio::spawn(consumer::background_task(io.clone(), connection.clone()));
+  io.ns("/", move |socket: SocketRef| {
+    // Setup shared state
+    socket.extensions.insert(connection.clone());
+    // Setup handlers
+    socket.on("message", handlers::update);
+    socket.on_disconnect(|socket, reason| async move {
+      info!("Socket.IO disconnected: {} {}", socket.id, reason);
+    });
+  });
 
   let app = Router::new()
     .nest_service("/", ServeDir::new("dist"))
@@ -42,9 +65,7 @@ async fn main() -> Result<()> {
 
   let addr = &SocketAddr::new(args.host, args.port);
   info!("Server starting on {}://{}", "http", addr);
-  Server::bind(addr)
-    .serve(app.into_make_service())
-    .await?;
+  Server::bind(addr).serve(app.into_make_service()).await?;
 
   Ok(())
 }

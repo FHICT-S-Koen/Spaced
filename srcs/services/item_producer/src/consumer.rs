@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use amqprs::{
   callbacks::{DefaultChannelCallback, DefaultConnectionCallback},
   channel::{BasicConsumeArguments, Channel, QueueBindArguments, QueueDeclareArguments},
@@ -7,7 +9,7 @@ use amqprs::{
 };
 use anyhow::{Ok, Result};
 use async_trait::async_trait;
-use socketioxide::SocketIo;
+use socketioxide::{SocketIo, extract::SocketRef};
 use tokio::sync::Notify;
 use tracing::info;
 
@@ -38,18 +40,8 @@ impl AsyncConsumer for ItemConsumer {
   }
 }
 
-pub async fn background_task(io: SocketIo) -> Result<()> {
+pub async fn background_task(socket: SocketIo, connection: Arc<Connection>) -> Result<()> {
   info!("Connect AMQP consumer");
-  let connection = Connection::open(&OpenConnectionArguments::new(
-    "localhost",
-    5672,
-    "user",
-    "bitnami",
-  ))
-  .await?;
-  connection
-    .register_callback(DefaultConnectionCallback)
-    .await?;
 
   let channel = connection.open_channel(None).await?;
   channel.register_callback(DefaultChannelCallback).await?;
@@ -73,7 +65,7 @@ pub async fn background_task(io: SocketIo) -> Result<()> {
 
   tokio::spawn(async move {
     channel
-      .basic_consume(ItemConsumer::new(io), args)
+      .basic_consume(ItemConsumer::new(socket), args)
       .await
       .unwrap();
     let guard = Notify::new();
