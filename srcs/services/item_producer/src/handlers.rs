@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use amqprs::{
-  callbacks::DefaultChannelCallback, channel::BasicPublishArguments, connection::Connection,
+  channel::{BasicPublishArguments, Channel},
   BasicProperties,
 };
 use socketioxide::extract::{AckSender, Data, SocketRef};
@@ -19,13 +19,8 @@ use tracing::info;
 
 pub fn update(socket: SocketRef, Data(data): Data<String>, _ack: AckSender) {
   info!("Received event: {:?}", data);
-  let connection = socket.extensions.get::<Arc<Connection>>().unwrap().clone();
+  let channel = socket.extensions.get::<Arc<Channel>>().unwrap().clone();
   tokio::spawn(async move {
-    let channel = connection.open_channel(None).await.unwrap();
-    channel
-      .register_callback(DefaultChannelCallback)
-      .await
-      .unwrap();
     let exchange_name = "amq.topic";
     let routing_key = "amqprs.example";
     let args = BasicPublishArguments::new(exchange_name, routing_key);

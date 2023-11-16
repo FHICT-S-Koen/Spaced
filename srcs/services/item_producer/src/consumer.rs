@@ -1,15 +1,13 @@
 use std::sync::Arc;
 
 use amqprs::{
-  callbacks::{DefaultChannelCallback, DefaultConnectionCallback},
   channel::{BasicConsumeArguments, Channel, QueueBindArguments, QueueDeclareArguments},
-  connection::{Connection, OpenConnectionArguments},
   consumer::AsyncConsumer,
   BasicProperties, Deliver,
 };
 use anyhow::{Ok, Result};
 use async_trait::async_trait;
-use socketioxide::{SocketIo, extract::SocketRef};
+use socketioxide::SocketIo;
 use tokio::sync::Notify;
 use tracing::info;
 
@@ -27,24 +25,18 @@ impl ItemConsumer {
 impl AsyncConsumer for ItemConsumer {
   async fn consume(
     &mut self,
-    channel: &Channel,
+    _channel: &Channel,
     _deliver: Deliver,
     _basic_properties: BasicProperties,
-    _content: Vec<u8>,
+    content: Vec<u8>,
   ) {
-    info!(
-      "Consuming incoming message on channel: {}",
-      channel.channel_id()
-    );
-    self.socket.emit("/", _content).unwrap();
+    info!("Consuming incoming message: {:?}", content);
+    self.socket.emit("/", content).unwrap();
   }
 }
 
-pub async fn background_task(socket: SocketIo, connection: Arc<Connection>) -> Result<()> {
+pub async fn background_task(socket: SocketIo, channel: Arc<Channel>) -> Result<()> {
   info!("Connect AMQP consumer");
-
-  let channel = connection.open_channel(None).await?;
-  channel.register_callback(DefaultChannelCallback).await?;
 
   let (queue_name, _, _) = channel
     .queue_declare(QueueDeclareArguments::default())
