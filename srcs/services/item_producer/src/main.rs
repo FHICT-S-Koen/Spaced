@@ -7,7 +7,8 @@ use amqprs::{
 use anyhow::Result;
 use axum::{Router, Server};
 use clap::Parser;
-use socketioxide::{extract::SocketRef, SocketIo};
+use serde::Deserialize;
+use socketioxide::{extract::{SocketRef, Data}, SocketIo};
 use sqlx::PgPool;
 use tower::ServiceBuilder;
 use tower_http::{cors::CorsLayer, services::ServeDir};
@@ -17,6 +18,11 @@ use tracing_subscriber::{filter::LevelFilter, EnvFilter};
 mod clients;
 mod consumer;
 mod handlers;
+
+#[derive(Debug, Deserialize)]
+struct AuthData {
+  user: String,
+}
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -59,9 +65,10 @@ async fn main() -> Result<()> {
 
   let (io_layer, io) = SocketIo::new_layer();
   tokio::spawn(consumer::background_task(io.clone(), channel.clone()));
-  io.ns("/", |socket: SocketRef| {
+  io.ns("/", |socket: SocketRef, Data(auth): Data<AuthData>| {
     let mut users = clients::get_users().write().unwrap();
-    users.insert(socket.id.to_string(), 1);
+    info!("{}", auth.user);
+    users.insert(socket.id.to_string(), auth.user);
 
     socket.extensions.insert(db_connection);
     socket.extensions.insert(channel);

@@ -65,8 +65,8 @@ pub fn create(socket: SocketRef, Data(data): Data<Item>, ack: AckSender) {
     let record: Item = sqlx::query_as!(
       Item,
       r#"
-        INSERT INTO ITEM (id, x, y, w, h, name, schema)
-        VALUES (DEFAULT, $1,$2,$3,$4,$5,$6)
+        INSERT INTO item (id, x, y, w, h, name, schema)
+        VALUES (DEFAULT, $1, $2, $3, $4, $5, $6)
         RETURNING *
         "#,
       data.x,
