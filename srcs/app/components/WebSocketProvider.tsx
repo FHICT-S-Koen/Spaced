@@ -4,40 +4,23 @@ import type { JSXElement } from 'solid-js';
 import { useContext, createSignal, Show } from 'solid-js';
 import { createContext } from 'solid-js';
 
-const [user, setUser] = createSignal('');
+const [connected, setConnected] = createSignal(false);
 
-let socket = io(new URL(`ws://${window.location.host}`), {
+const url = new URL(`http://${window.location.host}`);
+const socket = io(url, {
   autoConnect: false,
-  withCredentials: false,
-  auth: {
-    // eslint-disable-next-line solid/reactivity
-    user: user(),
-  },
 });
-function onSubmit(event: SubmitEvent) {
-  const formData = new FormData(event.target);
-  setUser(formData.get('user'));
-  socket = io(new URL(`ws://${window.location.host}`), {
-    // autoConnect: false,
-    withCredentials: false,
-    auth: {
-      user: user(),
-    },
-  });
-}
 
-// let socket = new WebSocket('ws://localhost:8080');
-// socket.addEventListener('close', (msg) => {
-//   console.log('Conection closed');
-//   try {
-//     // switch to long-polling
-//     socket = new WebSocket('ws://localhost:8080');
-//   } catch {
-//     // try again in xxx time
-//     // add increasing connection timeouts
-//   }
-//   // connected? > stop long-polling
-// });
+function onSubmit(event: SubmitEvent) {
+  event.preventDefault();
+  const target = event.target as HTMLFormElement | null;
+  if (target) {
+    const formData = new FormData(target);
+    socket.auth = { user: formData.get('user') };
+    socket.connect();
+    setConnected(true);
+  }
+}
 
 const context = { socket };
 
@@ -54,7 +37,7 @@ export function WebSocketProvider(props: WebSocketProps) {
     <WebSocketContext.Provider>
       {
         <>
-          <Show when={!user()}>
+          <Show when={!connected()}>
             <form onSubmit={onSubmit} class="absolute z-50 p-2">
               <input placeholder="user" name="user" class="m-2 rounded"></input>
             </form>

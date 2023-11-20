@@ -110,9 +110,9 @@ export function Container(properties: ContainerProps) {
       style={{
         'outline-color': selected()
           ? 'black'
-          : properties.color || (properties.data && 'transparent'),
+          : properties.schema && 'transparent',
         'transform-origin': 'top left',
-        'background-color': properties.color || 'transparent',
+        'background-color': 'transparent',
         'pointer-events': 'all',
         'line-height': '1rem',
         translate: `
@@ -122,7 +122,7 @@ export function Container(properties: ContainerProps) {
         scale: `${scalar()}`,
       }}
     >
-      {properties.data}
+      {properties.schema}
     </div>
   );
 }

@@ -15,7 +15,7 @@ pub mod item {
 use item::ItemResponse;
 use prost::Message as ProtoMessage;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Item {
   id: i32,
   x: i32,
@@ -26,7 +26,7 @@ pub struct Item {
   schema: Option<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct BoundingBox {
   xmin: i32,
   ymin: i32,
@@ -35,7 +35,7 @@ pub struct BoundingBox {
 }
 
 pub fn get_nearby(socket: SocketRef, Data(data): Data<BoundingBox>, ack: AckSender) {
-  info!("Requesting nearby items");
+  // info!("Requesting nearby items");
   let pool = socket.extensions.get::<PgPool>().unwrap().clone();
   tokio::spawn(async move {
     let records: Vec<Item> = sqlx::query_as!(

@@ -9,7 +9,7 @@ import { useSelection } from './SelectionProvider.js';
 import { useViewport, ViewportProvider } from './ViewportProvider.js';
 import { useWebSocket, WebSocketProvider } from './WebSocketProvider.js';
 import type { Item } from '../lib/types.js';
-import { debounce, throttle } from '../lib/utils.js';
+import { debounce, getBoundingBox, throttle } from '../lib/utils.js';
 import {
   relativeToAbsolute,
   scaleViewportOutFrom,
@@ -30,29 +30,38 @@ export function App() {
   const { getSelected } = useSelection();
   const { socket } = useWebSocket();
   const [items, setItems] = createSignal<Item[]>([]);
-
-  socket.on('item:updates', (item: Item | Item[]) => {
-    // eslint-disable-next-line unicorn/prefer-spread
-    setItems((value) => value.concat(item));
-  });
+  // socket.on('item:updates', (item: Item) => {
+  //   // eslint-disable-next-line unicorn/prefer-spread
+  //   setItems((value) =>
+  //     value.map((i) => {
+  //       if (item.id === i.id) {
+  //         item.schema = i.schema;
+  //       }
+  //       return item;
+  //     }),
+  //   );
+  // });
 
   createEffect(
     on(
       absoluteViewportPosition,
       throttle(async (pos: Vec2D) => {
-        const bb = {
-          xmin: Math.round(pos.x),
-          ymin: -Math.round(pos.y),
-          xmax: Math.round(pos.x) + Math.round(window.innerWidth / scalar()),
-          ymax: -Math.round(pos.y) + Math.round(window.innerHeight / scalar()),
-        };
-        const response: Item[] = await socket.emitWithAck(
-          'item:get_nearby',
-          bb,
-        );
-        // eslint-disable-next-line unicorn/prefer-spread
-        setItems((value) => value.concat(response));
-      }, 300),
+        const bb = getBoundingBox(pos);
+        const response = (await socket.emitWithAck('item:get_nearby', bb)) as
+          | Item
+          | Item[];
+        if (response) {
+          setItems((items) => {
+            // eslint-disable-next-line unicorn/prefer-array-flat
+            const newItems = []
+              // eslint-disable-next-line unicorn/prefer-array-flat, unicorn/prefer-spread
+              .concat(response)
+              .filter((item2) => !items.some((item1) => item1.id === item2.id));
+            // eslint-disable-next-line unicorn/prefer-spread
+            return items.concat(newItems);
+          });
+        }
+      }, 200),
     ),
   );
 
@@ -90,7 +99,7 @@ export function App() {
   }
   function handleClick() {
     const absolute = relativeToAbsolute(
-      new Vec2D(window.innerWidth / 2 - 24, -(window.innerHeight / 2 - 24)),
+      new Vec2D(window.innerWidth / 2 - 24, -window.innerHeight / 2 - 24),
       absoluteViewportPosition(),
       scalar(),
     );

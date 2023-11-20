@@ -7,22 +7,16 @@ use amqprs::{
 use anyhow::Result;
 use axum::{Router, Server};
 use clap::Parser;
-use serde::Deserialize;
-use socketioxide::{extract::{SocketRef, Data}, SocketIo};
+use socketioxide::{extract::{SocketRef, TryData}, SocketIo};
 use sqlx::PgPool;
 use tower::ServiceBuilder;
 use tower_http::{cors::CorsLayer, services::ServeDir};
-use tracing::info;
+use tracing::{info, error};
 use tracing_subscriber::{filter::LevelFilter, EnvFilter};
 
 mod clients;
 mod consumer;
 mod handlers;
-
-#[derive(Debug, Deserialize)]
-struct AuthData {
-  user: String,
-}
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -65,10 +59,14 @@ async fn main() -> Result<()> {
 
   let (io_layer, io) = SocketIo::new_layer();
   tokio::spawn(consumer::background_task(io.clone(), channel.clone()));
-  io.ns("/", |socket: SocketRef, Data(auth): Data<AuthData>| {
-    let mut users = clients::get_users().write().unwrap();
-    info!("{}", auth.user);
-    users.insert(socket.id.to_string(), auth.user);
+  io.ns("/", |socket: SocketRef, TryData(auth): TryData<clients::AuthData>| {
+    if let Err(e) = clients::user_connect(&socket, auth) {
+      error!("Failed to connect: {:?}", e);
+      socket.disconnect().ok();
+      return;
+    }
+    let users = clients::get_users().read().unwrap();
+    info!("Users: {:?}", users);
 
     socket.extensions.insert(db_connection);
     socket.extensions.insert(channel);

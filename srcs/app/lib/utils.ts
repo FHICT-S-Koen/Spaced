@@ -1,3 +1,5 @@
+import type { Vec2D } from './vector.js';
+
 type Callback<T> = (...args: unknown[]) => Promise<T> | T;
 
 export function debounce<T>(cb: Callback<T>, delay = 1000): Callback<T> {
@@ -24,5 +26,14 @@ export function throttle<T>(cb: Callback<T>, delay = 1000): Callback<T> {
       return mem;
     }
     return mem;
+  };
+}
+
+export function getBoundingBox(pos: Vec2D) {
+  return {
+    xmin: Math.round(pos.x),
+    ymin: -Math.round(pos.y) - Math.round(window.innerHeight),
+    xmax: Math.round(pos.x) + Math.round(window.innerWidth),
+    ymax: -Math.round(pos.y),
   };
 }
