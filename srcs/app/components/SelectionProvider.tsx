@@ -1,7 +1,7 @@
 import {
+  type JSXElement,
   useContext,
   createContext,
-  type JSXElement,
   createSignal,
 } from 'solid-js';
 
@@ -32,15 +32,13 @@ function unregister(selectable: number) {
   });
 }
 
-const context = {
+const SelectiontContext = createContext({
   getSelected,
   register,
   unregister,
   holdingCtrl,
   holdingShift,
-};
-
-const SelectiontContext = createContext(context);
+});
 
 type ProviderProps = {
   children: JSXElement;

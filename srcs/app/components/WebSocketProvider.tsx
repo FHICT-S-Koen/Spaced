@@ -1,8 +1,14 @@
-// Create WebSocket connection.
 import { io } from 'socket.io-client';
-import type { JSXElement } from 'solid-js';
-import { useContext, createSignal, Show } from 'solid-js';
-import { createContext } from 'solid-js';
+import {
+  type JSXElement,
+  useContext,
+  createContext,
+  Show,
+  createSignal,
+} from 'solid-js';
+
+import { useState } from './StateProvider.js';
+import type { Item } from '../lib/types.js';
 
 const [connected, setConnected] = createSignal(false);
 
@@ -22,9 +28,20 @@ function onSubmit(event: SubmitEvent) {
   }
 }
 
-const context = { socket };
+const { setItems } = useState();
 
-const WebSocketContext = createContext(context);
+socket.on('item:updates', (item: Item) => {
+  setItems((value) =>
+    value.map((i) => {
+      if (item.id === i.id) {
+        item.schema = i.schema;
+      }
+      return item;
+    }),
+  );
+});
+
+const WebSocketContext = createContext({ socket });
 
 type WebSocketProps = {
   children: JSXElement;
@@ -35,16 +52,12 @@ export function WebSocketProvider(props: WebSocketProps) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore Ignore since getters and setters are already present
     <WebSocketContext.Provider>
-      {
-        <>
-          <Show when={!connected()}>
-            <form onSubmit={onSubmit} class="absolute z-50 p-2">
-              <input placeholder="user" name="user" class="m-2 rounded"></input>
-            </form>
-          </Show>
-          {props.children}
-        </>
-      }
+      <Show when={!connected()}>
+        <form onSubmit={onSubmit} class="absolute z-50 p-2">
+          <input placeholder="user" name="user" class="m-2 rounded"></input>
+        </form>
+      </Show>
+      {props.children}
     </WebSocketContext.Provider>
   );
 }

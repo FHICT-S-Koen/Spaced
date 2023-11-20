@@ -24,7 +24,10 @@ struct Item {
   id: i32,
   x: i32,
   y: i32,
-  data: String,
+  w: i32,
+  h: i32,
+  name: Option<String>,
+  schema: Option<String>,
 }
 struct Client(Mutex<ItemClient<Channel>>);
 
@@ -35,17 +38,20 @@ impl ItemListResponse {
       id: i.id,
       x: i.x,
       y: i.y,
-      data: i.data,
+      w: i.w,
+      h: i.h,
+      name: i.name,
+      schema: i.schema,
     }).collect()
   }
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-  let client = ItemClient::connect("http://127.0.0.1:50051").await?;
+  // let client = ItemClient::connect("http://127.0.0.1:50051").await?;
 
   tauri::Builder::default()
-    .manage(Client(client.into()))
+    // .manage(Client(client.into()))
     .invoke_handler(tauri::generate_handler![fetch_nearby_items])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

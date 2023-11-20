@@ -1,9 +1,11 @@
 import axios from 'axios';
-import type { JSXElement } from 'solid-js';
-import { Show } from 'solid-js';
-import { createSignal } from 'solid-js';
-import { useContext } from 'solid-js';
-import { createContext } from 'solid-js';
+import {
+  type JSXElement,
+  createSignal,
+  useContext,
+  createContext,
+  Show,
+} from 'solid-js';
 
 const [isOpen, setIsOpen] = createSignal(false);
 const [isRegistration, setIsRegistration] = createSignal(true);

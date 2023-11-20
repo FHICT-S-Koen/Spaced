@@ -22,7 +22,7 @@ function setCallback(cb: () => void) {
   callback = cb;
 }
 
-const context = {
+const AppContext = createContext({
   isOpen,
   setIsOpen,
   absoluteMenuPosition,
@@ -30,15 +30,13 @@ const context = {
   selectedMenuItem,
   setSelectedMenuItem,
   setCallback,
-};
+});
 
-const MenuContext = createContext(context);
-
-type ContextmenuProps = {
+type ContextProps = {
   children: JSXElement;
 };
 
-export function ContextmenuProvider(props: ContextmenuProps) {
+export function ContextProvider(props: ContextProps) {
   const { absoluteViewportPosition, scalar } = useViewport();
   const translation = createMemo(() =>
     absoluteToRelative(
@@ -58,7 +56,7 @@ export function ContextmenuProvider(props: ContextmenuProps) {
   return (
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore Ignore since getters and setters are already present
-    <MenuContext.Provider>
+    <AppContext.Provider>
       {/* TODO: probably don't need this */}
       <Portal mount={document.querySelector('#viewport')!}>
         <Show when={isOpen()}>
@@ -97,10 +95,10 @@ export function ContextmenuProvider(props: ContextmenuProps) {
         </Show>
       </Portal>
       {props.children}
-    </MenuContext.Provider>
+    </AppContext.Provider>
   );
 }
 
-export function useContextmenu() {
-  return useContext(MenuContext);
+export function useAppContext() {
+  return useContext(AppContext);
 }
