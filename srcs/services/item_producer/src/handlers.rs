@@ -17,13 +17,13 @@ use prost::Message as ProtoMessage;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Item {
-  id: i32,
-  x: i32,
-  y: i32,
-  w: i32,
-  h: i32,
-  name: Option<String>,
-  schema: Option<String>,
+  pub id: i32,
+  pub x: i32,
+  pub y: i32,
+  pub w: i32,
+  pub h: i32,
+  pub name: Option<String>,
+  pub schema: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]

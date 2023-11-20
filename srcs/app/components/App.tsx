@@ -30,17 +30,17 @@ export function App() {
   const { getSelected } = useSelection();
   const { socket } = useWebSocket();
   const [items, setItems] = createSignal<Item[]>([]);
-  // socket.on('item:updates', (item: Item) => {
-  //   // eslint-disable-next-line unicorn/prefer-spread
-  //   setItems((value) =>
-  //     value.map((i) => {
-  //       if (item.id === i.id) {
-  //         item.schema = i.schema;
-  //       }
-  //       return item;
-  //     }),
-  //   );
-  // });
+  socket.on('item:updates', (item: Item) => {
+    // eslint-disable-next-line unicorn/prefer-spread
+    setItems((value) =>
+      value.map((i) => {
+        if (item.id === i.id) {
+          item.schema = i.schema;
+        }
+        return item;
+      }),
+    );
+  });
 
   createEffect(
     on(

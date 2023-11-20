@@ -7,9 +7,14 @@ use amqprs::{
 };
 use anyhow::{Ok, Result};
 use async_trait::async_trait;
+use bytes::Bytes;
+use prost::Message;
+use serde_json::Value;
 use socketioxide::SocketIo;
 use tokio::sync::Notify;
 use tracing::info;
+
+use crate::handlers::{item::ItemResponse, Item};
 
 struct ItemConsumer {
   socket: SocketIo,
@@ -31,7 +36,26 @@ impl AsyncConsumer for ItemConsumer {
     content: Vec<u8>,
   ) {
     info!("Consuming incoming message: {:?}", content);
-    self.socket.emit("/", content).unwrap();
+    let item = ItemResponse::decode(Bytes::from(content)).unwrap();
+
+    self
+      .socket
+      .emit(
+        "/",
+        serde_json::to_string(
+          &Item {
+            id: item.id,
+            x: item.x,
+            y: item.y,
+            w: item.w,
+            h: item.h,
+            name: item.name,
+            schema: item.schema,
+          },
+        ).unwrap()
+
+      )
+      .unwrap();
   }
 }
 
