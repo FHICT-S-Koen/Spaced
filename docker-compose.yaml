@@ -39,3 +39,23 @@ services:
       dockerfile: srcs/services/item_producer/Dockerfile
       args: [*x-distroless-tag]
     ports: ['8080:8080']
+  item_service:
+    image: spaced/item_service:${IMAGE_TAG:-latest}
+    profiles: ['services']
+    command:
+      ['--database-host=postgres://admin:password@postgres-dev:5432/spaced']
+    build:
+      dockerfile: srcs/services/item_service/Dockerfile
+      args: [*x-services-image-tag]
+    ports: ['8081:8081']
+    depends_on: [postgres-dev]
+  user_service:
+    image: spaced/user_service:${IMAGE_TAG:-latest}
+    profiles: ['services']
+    command:
+      ['--database-host=postgres://admin:password@postgres-dev:5432/spaced']
+    build:
+      dockerfile: srcs/services/user_service/Dockerfile
+      args: [*x-services-image-tag]
+    ports: ['8082:8082']
+    depends_on: [postgres-dev]
