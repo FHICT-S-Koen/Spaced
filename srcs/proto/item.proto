@@ -13,6 +13,11 @@ message ItemResponse {
   optional string schema = 7;
 }
 
+message ItemSchemaUpdateResponse {
+  uint32 pos = 1;
+  string schema_part = 2;
+}
+
 message ItemListResponse {
   repeated ItemResponse item_response = 1;
 }

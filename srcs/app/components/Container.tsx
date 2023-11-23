@@ -1,5 +1,5 @@
 // import { invoke } from '@tauri-apps/api/tauri';
-import { createMemo, type Setter } from 'solid-js';
+import { createMemo, createSignal, type Setter } from 'solid-js';
 
 // import { useContextmenu } from './ContextmenuProvider.js';
 import { useSelection } from './SelectionProvider.js';
@@ -14,6 +14,8 @@ type ContainerProps = {
 } & Item;
 
 export function Container(properties: ContainerProps) {
+  // eslint-disable-next-line solid/reactivity
+  const [schema, setSchema] = createSignal(properties.schema);
   const { absoluteViewportPosition, scalar } = useViewport();
   const { getSelected, holdingCtrl, holdingShift, register, unregister } =
     useSelection();
@@ -26,6 +28,7 @@ export function Container(properties: ContainerProps) {
       scalar(),
     ),
   );
+
   // function handleContextmenu(event: MouseEvent) {
   //   event.preventDefault();
   //   setAbsoluteMenuPosition(translation());
@@ -58,6 +61,38 @@ export function Container(properties: ContainerProps) {
     }
     unregister(properties.id!);
   }
+
+  // let savedSelection: Range = null;
+
+  // const saveSelection = () => {
+  //   const selection = window.getSelection()!;
+  //   if (selection.rangeCount > 0) {
+  //     savedSelection = selection.getRangeAt(0).cloneRange();
+  //   }
+  // };
+
+  // // Function to restore the saved selection
+  // const restoreSelection = () => {
+  //   const selection = window.getSelection()!;
+  //   if (savedSelection && selection.rangeCount > 0) {
+  //     selection.removeAllRanges();
+  //     selection.addRange(savedSelection);
+  //   }
+  // };
+
+  socket.on('item:updates', (item: Item) => {
+    // setItems((items) =>
+    //   items.map((i) => {
+    //     if (item.id === i.id) {
+    //       i = { ...i, schema: item.schema };
+    //     }
+    //     return i;
+    //   }),
+    // );
+    setSchema(item.schema);
+    // restoreSelection();
+  });
+
   function handleKeyUp() {
     // if (event.shiftKey && event.key === 'Delete') {
     //   invoke('delete', { id: properties.id }).then(() => {
@@ -71,10 +106,14 @@ export function Container(properties: ContainerProps) {
     // } else if (event.key === 'Escape') {
     //   ref.blur();
     // }
+    // saveSelection();
     socket.emit('item:update_inner', {
       ...properties,
-      schema: ref.textContent,
+      schema: ref.textContent!,
     } as Item);
+    // setSchema(ref.textContent!);
+    // restoreSelection();
+
     // .then((response: Item) => {
     //   // eslint-disable-next-line unicorn/prefer-spread
     //   setItems((value) => value.concat(response));
@@ -104,11 +143,12 @@ export function Container(properties: ContainerProps) {
       }
     }
   }
+
   return (
     <div
       ref={ref}
       onBeforeInput={handleBeforeInput}
-      onKeyUp={handleKeyUp}
+      onInput={handleKeyUp}
       onClick={handleClick}
       onBlur={handleBlur}
       // onContextMenu={handleContextmenu}
@@ -130,7 +170,7 @@ export function Container(properties: ContainerProps) {
         scale: `${scalar()}`,
       }}
     >
-      {properties.schema}
+      {schema()}
     </div>
   );
 }

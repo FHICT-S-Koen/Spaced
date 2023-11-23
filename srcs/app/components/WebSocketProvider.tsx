@@ -7,9 +7,6 @@ import {
   createSignal,
 } from 'solid-js';
 
-import { useState } from './StateProvider.js';
-import { type Item } from '../lib/types.js';
-
 const [connected, setConnected] = createSignal(false);
 
 const url = new URL(`http://${window.location.host}`);
@@ -27,19 +24,6 @@ function onSubmit(event: SubmitEvent) {
     setConnected(true);
   }
 }
-
-const { setItems } = useState();
-
-socket.on('item:updates', (item: Item) => {
-  setItems((value) =>
-    value.map((i) => {
-      if (item.id === i.id) {
-        item.schema = i.schema;
-      }
-      return item;
-    }),
-  );
-});
 
 const WebSocketContext = createContext({ socket });
 
