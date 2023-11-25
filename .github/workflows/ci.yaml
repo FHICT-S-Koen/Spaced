@@ -41,20 +41,7 @@ jobs:
       - run: npm run fmt
 
   clippy_check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: prerequisites
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y webkit2gtk-4.0 libayatana-appindicator3-dev protobuf-compiler
-          rustup set auto-self-update disable
-          rustup toolchain install stable --profile minimal --component clippy
-          mkdir dist
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: tauri
-      - run: npm run clippy
+    uses: ./.github/workflows/clippy.yaml
 
   docker_build:
     runs-on: ubuntu-latest
