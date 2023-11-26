@@ -34,13 +34,13 @@ jobs:
       - run: npm ci
       - run: npx tsc
 
-  fmt_check:
+  format_rust:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - run: npm run fmt
 
-  clippy_check:
+  lint_rust:
     uses: ./.github/workflows/clippy.yaml
 
   docker_build:

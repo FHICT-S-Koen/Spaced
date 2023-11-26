@@ -3382,7 +3382,6 @@ dependencies = [
  "prost",
  "serde",
  "serde_json",
- "sqlx",
  "tauri",
  "tauri-build",
  "tokio",
