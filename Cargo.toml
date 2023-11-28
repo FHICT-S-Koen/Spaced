@@ -3,6 +3,7 @@ members = [
   "srcs/services/item_producer",
   "srcs/tauri",
   "srcs/utils",
+  "srcs/cli",
 ]
 resolver = "2"
 
@@ -18,7 +19,8 @@ amqprs = "1"
 axum = { version = "0.6" }
 axum-extra = { version = "0.9" }
 bytes = "1"
-clap = { version = "4", features = ["derive"] }
+clap = { version = "4", features = ["derive", "env"] }
+clap_complete = "4"
 futures = "0.3"
 futures-util = "0.3"
 jsonwebtoken = "9"
