@@ -1,0 +1,6 @@
+- Render API, which helps determine how to render data, which includes 2 rendering models, pure HTML elements or via canvas.
+- Spaced SDK, used for extensibility, such as composing items and for plugins to expose internal functions.
+- Vector (graphics) system, used for various controls such as panning.
+- Action system, includes all available client actions, such panning, selections and also includes a history for undo and redo.
+- Access control system, whether to display data on the client and/or to share with others.
+- Data query system, text search (fuzzy), attribute search, location search, group search, media search.
