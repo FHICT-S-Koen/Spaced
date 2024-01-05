@@ -1,5 +1,6 @@
 [workspace]
 members = [
+  "srcs/bench",
   "srcs/services/item_producer",
   "srcs/tauri",
   "srcs/utils",
@@ -34,3 +35,4 @@ tower-http = { version = "0.5", features = ["fs", "trace", "cors"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 utils = { path = "srcs/utils" }
+

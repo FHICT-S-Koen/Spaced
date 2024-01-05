@@ -74,9 +74,6 @@ async fn main() -> Result<()> {
         socket.disconnect().ok();
         return;
       }
-      let users = clients::get_users().read().unwrap();
-      info!("Users: {:?}", users);
-
       socket.extensions.insert(db_connection);
       socket.extensions.insert(channel);
       // Setup handlers
