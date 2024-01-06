@@ -54,6 +54,38 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: npm run clippy
 
+  test_rust:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+      rabbitmq:
+        image: bitnami/rabbitmq
+        ports:
+          - 5672:5672
+          - 15672:15672
+    steps:
+      - uses: actions/checkout@v4
+      - name: prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y webkit2gtk-4.0 libayatana-appindicator3-dev protobuf-compiler
+          rustup set auto-self-update disable
+          rustup toolchain install stable --profile minimal --component clippy
+          mkdir dist
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install sqlx-cli
+      - run: sqlx db setup
+        env:
+          DATABASE_URL: postgres://postgres:password@localhost:5432/spaced
+      - run: cargo test
+        env:
+          DATABASE_URL: postgres://postgres:password@localhost:5432/spaced
+
   docker_build:
     runs-on: ubuntu-latest
     steps:
