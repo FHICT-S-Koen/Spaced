@@ -57,14 +57,6 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - run: |
-          mkdir -p $RUNNER_TEMP/cache
-          ln -s $RUNNER_TEMP/cache /var/cache/apt/archives
-        if: false # This step is just for creating a symbolic link, so we don't want to cache it.
-      - uses: actions/cache@v3
-        with:
-          path: $RUNNER_TEMP/cache
-          key: ${{ runner.os }}-apt-${{ hashFiles('**/*.lock') }}
-      - run: |
           sudo apt-get update
           sudo apt-get install -y webkit2gtk-4.0 libayatana-appindicator3-dev protobuf-compiler
           mkdir dist
