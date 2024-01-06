@@ -67,7 +67,6 @@ jobs:
         image: bitnami/rabbitmq
         ports:
           - 5672:5672
-          - 15672:15672
     steps:
       - uses: actions/checkout@v4
       - name: prerequisites
