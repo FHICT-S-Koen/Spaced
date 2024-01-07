@@ -60,11 +60,16 @@ jobs:
       postgres:
         image: postgres:16
         env:
+          POSTGRES_DB: spaced
+          POSTGRES_USER: admin
           POSTGRES_PASSWORD: password
         ports:
           - 5432:5432
       rabbitmq:
-        image: bitnami/rabbitmq
+        image: rabbitmq
+        env:
+          RABBITMQ_DEFAULT_USER: admin
+          RABBITMQ_DEFAULT_PASS: password
         ports:
           - 5672:5672
     steps:
@@ -80,10 +85,10 @@ jobs:
       - run: cargo install sqlx-cli
       - run: sqlx db setup
         env:
-          DATABASE_URL: postgres://postgres:password@localhost:5432/spaced
+          DATABASE_URL: postgres://admin:password@localhost:5432/spaced
       - run: cargo test
         env:
-          DATABASE_URL: postgres://postgres:password@localhost:5432/spaced
+          DATABASE_URL: postgres://admin:password@localhost:5432/spaced
 
   docker_build:
     runs-on: ubuntu-latest
