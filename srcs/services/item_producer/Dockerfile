@@ -7,6 +7,7 @@ FROM rust:1.70.0 AS build
 WORKDIR /app
 COPY srcs srcs
 COPY .sqlx .sqlx
+COPY dist dist
 COPY Cargo.toml Cargo.lock ./
 
 RUN apt-get update && apt-get install -y protobuf-compiler libprotobuf-dev
@@ -15,5 +16,6 @@ RUN cargo build -p item_producer --release
 # TODO: use static and copy dynamically linked libraries or build with static linking
 FROM gcr.io/distroless/cc:$IMAGE_TAG
 WORKDIR /home/nonroot
-COPY --from=build --chown=nonroot:nonroot /app/target/release/item_producer /usr/bin
+COPY --from=build --chown=nonroot:nonroot --chmod=544 /app/target/release/item_producer /usr/bin
+COPY --from=build --chown=nonroot:nonroot --chmod=544 /app/dist dist
 ENTRYPOINT ["item_producer"]
