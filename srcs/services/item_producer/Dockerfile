@@ -16,6 +16,6 @@ RUN cargo build -p item_producer --release
 # TODO: use static and copy dynamically linked libraries or build with static linking
 FROM gcr.io/distroless/cc:$IMAGE_TAG
 WORKDIR /
-COPY --from=build --chmod=555 /app/target/release/item_producer /usr/bin
-COPY --from=build --chmod=555 /app/dist /dist
+COPY --from=build --chown=root:root --chmod=555 /app/target/release/item_producer /usr/bin
+COPY --from=build --chown=root:root --chmod=555 /app/dist /dist
 ENTRYPOINT ["item_producer"]
