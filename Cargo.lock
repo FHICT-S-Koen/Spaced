@@ -5153,10 +5153,39 @@ dependencies = [
 ]
 
 [[package]]
+<<<<<<< Updated upstream
 name = "web-sys"
 version = "0.3.65"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5db499c5f66323272151db0e666cd34f78617522fb0c1604d31a27c50c206a85"
+=======
+name = "web_socket"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "axum-extra",
+ "clap",
+ "engineioxide",
+ "futures",
+ "futures-util",
+ "prost",
+ "prost-build",
+ "rdkafka",
+ "redis",
+ "serde_json",
+ "socketioxide",
+ "tokio",
+ "tower",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "web_transport"
+version = "0.0.0"
+>>>>>>> Stashed changes
 dependencies = [
  "js-sys",
  "wasm-bindgen",

@@ -16,6 +16,7 @@ export function App() {
   const { items, setItems } = useState();
   const { socket } = useWebSocket();
 
+<<<<<<< Updated upstream
   createEffect(
     on(
       absoluteViewportPosition,
@@ -41,6 +42,26 @@ export function App() {
         }
       }, 200),
     ),
+=======
+  const [data, { mutate }] = createResource<Item[], Vec2D>(
+    absoluteViewportPosition,
+    throttle(async (output) => {
+      console.log(window.innerWidth, window.innerHeight);
+      const bb = {
+        xmin: Math.round((output as Vec2D).x),
+        ymin: -Math.round((output as Vec2D).y),
+        xmax:
+          Math.round((output as Vec2D).x) +
+          Math.round(window.innerWidth / scalar()),
+        ymax:
+          -Math.round((output as Vec2D).y) +
+          Math.round(window.innerHeight / scalar()),
+      };
+      console.log(bb);
+      return socket.emitWithAck('get:items', bb);
+      // return await invoke('fetch_nearby_items', bb);
+    }, 300),
+>>>>>>> Stashed changes
   );
 
   return (
