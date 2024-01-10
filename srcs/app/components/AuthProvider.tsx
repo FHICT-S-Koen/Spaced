@@ -7,7 +7,7 @@ import {
   Show,
 } from 'solid-js';
 
-const [isLoggedIn, setIsLoggedIn] = createSignal(false);
+const [isOpen, setIsOpen] = createSignal(true);
 const [isRegistration, setIsRegistration] = createSignal(true);
 
 function register(event: SubmitEvent) {
@@ -23,7 +23,7 @@ function register(event: SubmitEvent) {
       password,
     })
     .then((payload) => {
-      setIsLoggedIn(true);
+      setIsOpen(false);
       localStorage.setItem('access_token', payload.data.access_token);
     })
     .catch(() => {
@@ -42,7 +42,7 @@ function login(event: SubmitEvent) {
       password,
     })
     .then((payload) => {
-      setIsLoggedIn(true);
+      setIsOpen(false);
       localStorage.setItem('access_token', payload.data.access_token);
     })
     .catch(() => {
@@ -62,78 +62,68 @@ export function AuthProvider(props: AuthProps) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore Ignore since getters and setters are already present
     <AuthContext.Provider>
-      <Show when={!isLoggedIn()}>
+      <Show when={isOpen()}>
         <dialog
-          open={!isLoggedIn()}
-          class="inset-0 z-[9999] flex h-[460px] items-center justify-center rounded"
+          open={isOpen()}
+          class="z-[9999] flex h-full w-full justify-center rounded bg-transparent p-2 align-middle text-white backdrop-blur-[1px]"
         >
           <form
             onSubmit={(e) => (isRegistration() ? register(e) : login(e))}
-            class="flex h-full w-96 flex-col overflow-hidden rounded-md p-8 shadow-md"
+            class="w-1/5"
           >
-            <h2 class="mb-4 text-center text-2xl font-bold text-gray-800">
-              {isRegistration() ? 'Register' : 'Login to account'}
-            </h2>
-            <div class="mb-6 flex-grow">
-              <label class="mb-2 block font-semibold text-gray-800">
-                Email
+            <div class="h-44">
+              <label class="flex justify-between">
+                Email:
                 <input
                   type="email"
                   name="email"
-                  class="w-full rounded border px-3 py-2 outline-none transition-all duration-300 focus:border-blue-500"
+                  class="rounded p-1 text-black"
                   placeholder="user@example.com"
                 />
               </label>
+              <br />
               <Show when={isRegistration()}>
-                <label class="mb-2 block font-semibold text-gray-800">
-                  Username
+                <label class="flex justify-between">
+                  Username:
                   <input
                     type="text"
                     name="username"
-                    class="w-full rounded border px-3 py-2 outline-none transition-all duration-300 focus:border-blue-500"
-                    placeholder="username"
+                    class="rounded p-1 text-black"
                   />
                 </label>
+                <br />
               </Show>
-              <label class="mb-2 block font-semibold text-gray-800">
-                Password
+              <label class="flex justify-between">
+                Password:
                 <input
                   type="password"
                   name="password"
-                  class="w-full rounded border px-3 py-2 outline-none transition-all duration-300 focus:border-blue-500"
-                  placeholder="•••••••••••••"
+                  class="rounded p-1 text-black"
                 />
               </label>
             </div>
+            <br />
             <button
-              class="w-full rounded-md bg-blue-500 px-4 py-2 text-white outline-none transition-all duration-300 hover:bg-blue-600"
+              class="float-right w-32 rounded bg-slate-400 p-1"
               type="submit"
             >
               Submit
             </button>
-            <div class="mt-6 text-center text-gray-800">
-              {isRegistration() ? (
-                <p>
-                  Already have an account?{' '}
-                  <button
-                    class="text-blue-500 transition-all duration-300 hover:underline focus:outline-none"
-                    onClick={() => setIsRegistration(false)}
-                  >
-                    Login here
-                  </button>
-                </p>
-              ) : (
-                <p>
-                  Don't have an account?{' '}
-                  <button
-                    class="text-blue-500 transition-all duration-300 hover:underline focus:outline-none"
-                    onClick={() => setIsRegistration(true)}
-                  >
-                    Register here
-                  </button>
-                </p>
-              )}
-            </div>
+            {isRegistration() ? (
+              <button
+                class="w-48 rounded bg-slate-400 p-1"
+                onClick={() => setIsRegistration(false)}
+              >
+                Login
+              </button>
+            ) : (
+              <button
+                class="w-48 rounded bg-slate-400 p-1"
+                onClick={() => setIsRegistration(true)}
+              >
+                Register a new account
+              </button>
+            )}
           </form>
         </dialog>
       </Show>
