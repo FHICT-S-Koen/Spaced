@@ -10,6 +10,7 @@ use axum::{
   response::{IntoResponse, Response},
   Json,
 };
+use dotenvy::dotenv;
 use jsonwebtoken::{encode, DecodingKey, EncodingKey, Header};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
@@ -31,6 +32,7 @@ impl Keys {
 }
 
 static KEYS: Lazy<Keys> = Lazy::new(|| {
+  dotenv().ok();
   let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
   Keys::new(secret.as_bytes())
 });
