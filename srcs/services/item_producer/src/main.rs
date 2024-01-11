@@ -92,11 +92,11 @@ async fn app(db_pool: PgPool, shared_amqp_channel: Arc<Channel>) -> anyhow::Resu
   io.ns(
     "/",
     |socket: SocketRef, TryData(auth): TryData<clients::AuthData>| {
-      if let Err(e) = clients::user_connect(&socket, auth) {
-        error!("Failed to connect: {:?}", e);
-        socket.disconnect().ok();
-        return;
-      }
+      // if let Err(e) = clients::user_connect(&socket, auth) {
+      //   error!("Failed to connect: {:?}", e);
+      //   socket.disconnect().ok();
+      //   return;
+      // }
       // Setup handlers
       socket.on("item:create", handlers::create);
       socket.on("item:get_nearby", handlers::get_nearby);

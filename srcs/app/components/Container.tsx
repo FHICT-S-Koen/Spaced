@@ -68,7 +68,7 @@ export function Container(properties: ContainerProps) {
       onKeyUp={handleKeyUp}
       onClick={handleClick}
       onBlur={handleBlur}
-      class="absolute min-h-[30px] min-w-[30px] whitespace-pre p-1 outline outline-1"
+      class="absolute min-h-[30px] min-w-[30px] text-wrap p-1 outline outline-1"
       tabIndex="0"
       contenteditable={selected()}
       style={{

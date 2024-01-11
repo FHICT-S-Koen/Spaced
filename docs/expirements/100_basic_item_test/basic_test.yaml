@@ -1,0 +1,36 @@
+config:
+  target: 'http://localhost:8080'
+  socketio:
+    transports: ["websocket"]
+  phases:
+    - duration: 300
+      arrivalCount: 8000
+      # arrivalRate: 250 # Num of new clients each second
+      # maxVusers: 20000
+    # - duration: 10
+    #   arrivalRate: 200 # Num of new clients each second
+    # - duration: 10
+    #   arrivalRate: 300 # Num of new clients each second
+scenarios:
+  - engine: socketio
+    flow:
+      - namespace: '/'
+        emit:
+          channel: 'item:get_nearby'
+          data:
+            xmin:	-2000
+            ymin:	-1000
+            xmax:	2000
+            ymax:	1000
+        acknowledge:
+          match:
+            json: "$.0.name"
+            value: "Example Name"
+              # h: 200
+              # id: 103
+              # name: "Example Name"
+              # schema: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Consequat ac felis donec et odio pellentesque diam. Pretium viverra suspendisse potenti nullam ac tortor. Consequat ac felis donec et odio pellentesque diam. Id porta nibh venenatis cras sed felis. Ipsum suspendisse ultrices gravida dictum fusce ut placerat orci nulla. Montes nascetur ridiculus mus mauris vitae ultricies leo integer. Dignissim diam quis enim lobortis scelerisque fermentum. Dictumst quisque sagittis purus sit amet volutpat consequat. Lectus mauris ultrices eros in cursus turpis massa. Pellentesque nec nam aliquam sem. In massa tempor nec feugiat nisl pretium fusce id. Mauris pharetra et ultrices neque ornare aenean euismod. Tincidunt tortor aliquam nulla facilisi. Sem et tortor consequat id porta nibh venenatis cras sed. Vivamus arcu felis bibendum ut tristique et egestas quis. Sollicitudin aliquam ultrices sagittis orci. Blandit aliquam etiam erat velit."
+              # w: 100
+              # x: 66
+              # y: 77
+      # - think: 1000

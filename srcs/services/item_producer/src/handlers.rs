@@ -54,6 +54,8 @@ pub async fn get_nearby(
   .await
   .unwrap();
 
+  // println!("{:?}", records.len());
+
   ack.send(records).ok();
 }
 
