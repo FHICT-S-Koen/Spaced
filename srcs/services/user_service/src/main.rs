@@ -2,8 +2,8 @@ use axum::{routing::post, Router};
 use clap::Parser;
 use sqlx::PgPool;
 use tokio::net::TcpListener;
+use tower_http::trace::TraceLayer;
 use tracing::info;
-use tracing_subscriber::{filter::LevelFilter, EnvFilter};
 
 mod auth;
 mod handlers;
@@ -22,7 +22,7 @@ struct Args {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-  init_logging();
+  utils::init_logging();
 
   let args = Args::parse();
 
@@ -34,6 +34,7 @@ async fn main() -> anyhow::Result<()> {
     .route("/api/user/register", post(handlers::register_email))
     .route("/api/user/refresh", post(handlers::refresh_token))
     .route("/api/user/login", post(handlers::email_login))
+    .layer(TraceLayer::new_for_http())
     .with_state(db_pool);
 
   let address = format!("{}:{}", args.host, args.port);
@@ -42,16 +43,4 @@ async fn main() -> anyhow::Result<()> {
   axum::serve(listener, app).await?;
 
   Ok(())
-}
-
-fn init_logging() {
-  let env_filter = EnvFilter::builder()
-    .with_default_directive(LevelFilter::INFO.into())
-    .from_env_lossy();
-
-  tracing_subscriber::fmt()
-    .with_target(true)
-    .with_level(true)
-    .with_env_filter(env_filter)
-    .init();
 }
